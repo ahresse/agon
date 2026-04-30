@@ -66,15 +66,23 @@ class OutputFormatter:
         return f"{color}{grade:.2f}/{MAX_GRADE}\033[0m"
 
     @staticmethod
-    def format_assessment_result(result: AssessmentResult) -> str:
+    def format_assessment_result(result: AssessmentResult, normalized_weight: float) -> str:
         """Format a single assessment result line."""
-        weight_pct = int(result.weight * 100)
+        weight_pct = int(normalized_weight * 100)
         return (
             f"- {result.name:<{OutputFormatter.NAME_COL_WIDTH}} "
             f"[{weight_pct:>{OutputFormatter.WEIGHT_COL_WIDTH}}%]: "
             f"{OutputFormatter.format_grade(float(result.grade))} "
             f"(exit code: {result.returncode})"
         )
+
+
+def _normalize_weights(results: list[AssessmentResult]) -> list[float]:
+    """Normalize weights so they always sum to 1 when total weight is positive."""
+    total_weight = sum(result.weight for result in results)
+    if total_weight <= 0:
+        return [0.0 for _ in results]
+    return [result.weight / total_weight for result in results]
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -172,14 +180,12 @@ def run_quality_assessments(
 def display_assessment_results(results: list[AssessmentResult]) -> float:
     """Print weighted assessment results and return the total grade."""
     print("\nAssessment results:")
-    weighted_sum = 0.0
-    total_weight = 0.0
-    for result in results:
-        print(OutputFormatter.format_assessment_result(result))
-        weighted_sum += result.grade * result.weight
-        total_weight += result.weight
+    normalized_weights = _normalize_weights(results)
+    total_grade = 0.0
+    for result, normalized_weight in zip(results, normalized_weights):
+        print(OutputFormatter.format_assessment_result(result, normalized_weight))
+        total_grade += result.grade * normalized_weight
 
-    total_grade = weighted_sum / total_weight if total_weight else 0.0
     print(f"\n{OutputFormatter.banner_minor()}")
     print(f"Total grade: {OutputFormatter.format_grade(total_grade)}")
     print(OutputFormatter.banner_minor())

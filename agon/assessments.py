@@ -54,15 +54,12 @@ class AssessmentSpec:
     required_debian_packages: tuple[str, ...] = ()
 
 
+ArchiveFormatCheck = Callable[[AssessmentExecution], str | None]
+
+
 def _build_archive_format_command(target_path: str) -> str:
     quoted_target = shlex.quote(target_path)
-    return (
-        f"if [[ {quoted_target} != *.tar.gz ]]; then "
-        f"echo 'Expected a .tar.gz archive: {target_path}' >&2; "
-        "exit 1; "
-        "fi; "
-        f"python3 -m tarfile -l {quoted_target} >/dev/null"
-    )
+    return f"python3 -m tarfile -l {quoted_target} >/dev/null"
 
 
 def _build_pylint_command(target_path: str) -> str:
@@ -80,17 +77,43 @@ def _build_flake8_command(target_path: str) -> str:
     )
 
 
-def _evaluate_archive_format(execution: AssessmentExecution) -> float:
-    if execution.returncode == 0:
-        return MAX_GRADE
+def _check_archive_format_extension(execution: AssessmentExecution) -> str | None:
+    """Ensure the assessed archive uses the required .tar.gz suffix."""
+    if execution.target_path.endswith(".tar.gz"):
+        return None
+    return f"Expected a .tar.gz archive: {execution.target_path}"
 
-    message = (
+
+def _check_archive_format_content(execution: AssessmentExecution) -> str | None:
+    """Ensure the assessed archive is a valid tar.gz payload."""
+    if execution.returncode == 0:
+        return None
+    return (
         execution.stderr
         or execution.stdout
         or f"Archive format validation failed: {execution.target_path}"
     )
-    warnings.warn(message, RuntimeWarning, stacklevel=2)
-    return 0
+
+
+ARCHIVE_FORMAT_CHECKS: tuple[ArchiveFormatCheck, ...] = (
+    _check_archive_format_extension,
+    _check_archive_format_content,
+)
+
+
+def _evaluate_archive_format(execution: AssessmentExecution) -> float:
+    failures = [
+        message
+        for check in ARCHIVE_FORMAT_CHECKS
+        if (message := check(execution)) is not None
+    ]
+    if not failures:
+        return MAX_GRADE
+
+    warnings.warn("\n".join(failures), RuntimeWarning, stacklevel=2)
+    penalty_per_failed_check = 10.0
+    penalty = penalty_per_failed_check * len(failures)
+    return max(0.0, MAX_GRADE - penalty)
 
 
 def _evaluate_pylint(execution: AssessmentExecution) -> float:
@@ -144,7 +167,7 @@ ASSESSMENTS: dict[str, AssessmentSpec] = {
     ),
     "pylint": AssessmentSpec(
         name="pylint",
-        weight=0.4,
+        weight=0.8,
         command_builder=_build_pylint_command,
         evaluator=_evaluate_pylint,
         required_debian_packages=("pylint",),
