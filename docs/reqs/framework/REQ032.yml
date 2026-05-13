@@ -1,0 +1,29 @@
+active: true
+derived: true
+header: 'Plugin defines custom evaluator for deterministic test output'
+level: '1.32'
+links:
+  - REQ005
+  - REQ019
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL allow a plugin to define a custom evaluator function that
+  processes the exit code, stdout, and stderr produced by the test command of
+  a deterministic atomic test and returns a grade in the closed interval
+  [0, grade_scale_maximum].
+evaluation:
+  type: deterministic
+  method: unit_test
+  success_criteria: |
+    a deterministic atomic test configured with a custom evaluator produces
+    the expected grade for a known command output; a deterministic atomic test
+    without a custom evaluator falls back to the default evaluator and also
+    produces a grade in [0, grade_scale_maximum]
+  failure_mode: abort the atomic test and assign a zero grade
+  guardrails:
+    - evaluator execution timeout 30s per call
+    - evaluator function signature validated at plugin load time
+    - evaluator code executed in a restricted context with no network access
+  human_escalation: evaluator raises an unhandled exception or exceeds the 30s timeout
