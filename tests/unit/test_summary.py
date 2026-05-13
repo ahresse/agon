@@ -83,3 +83,9 @@ def test_summary_computes_final_weighted_grade() -> None:
     summary = generate_summary(results, final_grade=15.0)
 
     assert summary.final_grade == 15.0
+
+
+def test_summary_carries_grade_scale_maximum() -> None:
+    """The summary shall expose the grade scale maximum used for the assessment (REQ029)."""
+    summary = generate_summary([], final_grade=0.0, grade_scale_maximum=100.0)
+    assert summary.grade_scale_maximum == 100.0

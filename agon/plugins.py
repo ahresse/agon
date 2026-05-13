@@ -45,6 +45,19 @@ Plugin format (version 1.0)
         weight: 0.5
         grading_prompt: "Rate the documentation clarity from 0 to 20."
 
+      - id: "custom-eval"
+        name: "Custom evaluator test"
+        test_type: "deterministic"
+        target_path: "."
+        execution_strategy: "post_extract"
+        weight: 0.5
+        command: "echo hello"
+        evaluator:
+          type: "custom"
+          source: |
+            def evaluate(exit_code, stdout, stderr):
+                return 20.0 if exit_code == 0 else 0.0
+
     presets:
       - name: "my-preset"
         tests:
@@ -56,9 +69,14 @@ Plugin format (version 1.0)
 
 from __future__ import annotations
 
+import ast
+import json
 import logging
+import math
 import re
 import shlex
+import subprocess
+import sys
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -75,6 +93,7 @@ SUPPORTED_PLUGIN_VERSIONS = {"1.0"}
 MAX_PLUGIN_FILE_SIZE = 1 * 1024 * 1024  # 1 MiB  (REQ026 guardrail)
 REGEX_EVAL_TIMEOUT = 5  # seconds per regex execution (REQ021 guardrail)
 SCRIPT_EVAL_TIMEOUT = 300  # seconds per script execution (REQ022 guardrail)
+CUSTOM_EVAL_TIMEOUT = 30  # seconds per custom evaluator call (REQ032 guardrail)
 MAX_AGENT_CONTEXT = 128 * 1024  # 128 KiB excerpt cap (REQ023 guardrail)
 
 
@@ -95,6 +114,105 @@ class PluginDefinition:
     source_path: Path
     atomic_tests: list[AtomicTest] = field(default_factory=list)
     presets: list[TestSuitePreset] = field(default_factory=list)
+
+
+# ----------------------------------------------------------------------
+# Restricted evaluator context helpers
+# ----------------------------------------------------------------------
+
+_ALLOWED_EVAL_MODULES = {"re", "math", "json", "statistics"}
+
+
+def _make_restricted_import() -> Any:
+    """Return a restricted ``__import__`` that whitelists safe modules."""
+
+    def _restricted_import(name: str, *args: Any, **kwargs: Any) -> Any:
+        base = name.split(".")[0]
+        if base not in _ALLOWED_EVAL_MODULES:
+            raise ImportError(f"Import of {name} is not allowed in evaluator context")
+        return __builtins__.__import__(name, *args, **kwargs)
+
+    return _restricted_import
+
+
+def _make_restricted_globals() -> dict[str, Any]:
+    """Build a restricted globals dictionary for evaluator execution."""
+    return {
+        "__builtins__": {
+            "True": True,
+            "False": False,
+            "None": None,
+            "len": len,
+            "str": str,
+            "int": int,
+            "float": float,
+            "range": range,
+            "list": list,
+            "dict": dict,
+            "tuple": tuple,
+            "set": set,
+            "abs": abs,
+            "min": min,
+            "max": max,
+            "sum": sum,
+            "round": round,
+            "enumerate": enumerate,
+            "zip": zip,
+            "map": map,
+            "filter": filter,
+            "__import__": _make_restricted_import(),
+        }
+    }
+
+
+def _validate_custom_evaluator(evaluator: dict, path: Path, test_id: str) -> None:
+    """Validate a custom evaluator at plugin load time using AST (REQ032)."""
+    source = evaluator.get("source")
+    if not isinstance(source, str) or not source.strip():
+        raise PluginLoadError(
+            f"Custom evaluator for test {test_id} must contain a non-empty string 'source' field",
+            path,
+        )
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError as exc:
+        raise PluginLoadError(
+            f"Custom evaluator for test {test_id} contains invalid Python: {exc}",
+            path,
+        ) from exc
+
+    evaluate_node = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == "evaluate":
+            evaluate_node = node
+            break
+
+    if evaluate_node is None:
+        raise PluginLoadError(
+            f"Custom evaluator for test {test_id} must define a function named 'evaluate'",
+            path,
+        )
+
+    args = evaluate_node.args
+    num_args = len(args.posonlyargs) + len(args.args)
+    has_vararg = args.vararg is not None
+    has_kwarg = args.kwarg is not None
+
+    if has_vararg or has_kwarg:
+        if num_args < 3:
+            raise PluginLoadError(
+                f"Custom evaluator 'evaluate' for test {test_id} must accept at least "
+                f"3 positional arguments, got {num_args}",
+                path,
+            )
+    else:
+        if num_args != 3:
+            raise PluginLoadError(
+                f"Custom evaluator 'evaluate' for test {test_id} must accept exactly "
+                f"3 positional arguments (exit_code, stdout, stderr), got {num_args}",
+                path,
+            )
 
 
 class PluginLoader:
@@ -276,6 +394,18 @@ class PluginLoader:
             )
             evaluator = None
 
+        if isinstance(evaluator, dict) and evaluator.get("type") == "custom":
+            try:
+                _validate_custom_evaluator(evaluator, path, test_id)
+            except PluginLoadError as exc:
+                _LOGGER.error(
+                    "Skipping atomic test %s in %s: %s",
+                    test_id,
+                    path,
+                    exc.message,
+                )
+                return None
+
         return AtomicTest(
             id=test_id,
             name=name,
@@ -399,7 +529,7 @@ class PluginRegistry:
 
 
 # ----------------------------------------------------------------------
-# Plugin evaluators (regex & script)
+# Plugin evaluators (regex, script, custom)
 # ----------------------------------------------------------------------
 
 def _validate_glob_pattern(pattern: str) -> None:
@@ -408,10 +538,18 @@ def _validate_glob_pattern(pattern: str) -> None:
         raise ValueError(f"Glob pattern contains path traversal: {pattern}")
 
 
+def _clamp_grade(value: float, grade_scale_maximum: float) -> float:
+    """Clamp a raw grade to [0, grade_scale_maximum]."""
+    return max(0.0, min(grade_scale_maximum, float(value)))
+
+
 def run_regex_evaluator(
-    container_name: str, extracted_path: str, evaluator: dict
+    container_name: str,
+    extracted_path: str,
+    evaluator: dict,
+    grade_scale_maximum: float = 20.0,
 ) -> float:
-    """Run a regex-based evaluator inside the container and return a grade in [0, 20].
+    """Run a regex-based evaluator inside the container and return a grade in [0, grade_scale_maximum].
 
     The evaluator dict is expected to contain at minimum:
 
@@ -422,7 +560,7 @@ def run_regex_evaluator(
     pattern = str(evaluator.get("pattern", ""))
     target_file = str(evaluator.get("target_file", "*"))
     score_on_match = float(evaluator.get("score_on_match", 0.0))
-    score_on_no_match = float(evaluator.get("score_on_no_match", 20.0))
+    score_on_no_match = float(evaluator.get("score_on_no_match", grade_scale_maximum))
 
     if not pattern:
         _LOGGER.warning("Regex evaluator has empty pattern; returning 0.0")
@@ -450,20 +588,24 @@ def run_regex_evaluator(
             f"python3 -c {shlex.quote(script)}",
             timeout=REGEX_EVAL_TIMEOUT,
         )
-        return float(proc.stdout.strip().splitlines()[-1])
+        raw = float(proc.stdout.strip().splitlines()[-1])
+        return _clamp_grade(raw, grade_scale_maximum)
     except (ValueError, IndexError, TimeoutError) as exc:
         _LOGGER.warning("Regex evaluator failed for %s: %s", container_name, exc)
         return 0.0
 
 
 def run_script_evaluator(
-    container_name: str, extracted_path: str, test: AtomicTest
+    container_name: str,
+    extracted_path: str,
+    test: AtomicTest,
+    grade_scale_maximum: float = 20.0,
 ) -> float:
-    """Run a script-based deterministic evaluator and return a grade in [0, 20].
+    """Run a script-based deterministic evaluator and return a grade in [0, grade_scale_maximum].
 
     The evaluator dict may contain:
 
-    * ``grade_on_zero_exit`` (float, default 20.0)
+    * ``grade_on_zero_exit`` (float, default grade_scale_maximum)
     * ``grade_on_non_zero_exit`` (float, default 0.0)
     """
     evaluator = test.evaluator or {}
@@ -472,7 +614,7 @@ def run_script_evaluator(
         _LOGGER.warning("Script evaluator has no command for test %s", test.id)
         return 0.0
 
-    grade_on_zero = float(evaluator.get("grade_on_zero_exit", 20.0))
+    grade_on_zero = float(evaluator.get("grade_on_zero_exit", grade_scale_maximum))
     grade_on_non_zero = float(evaluator.get("grade_on_non_zero_exit", 0.0))
 
     full_command = f"cd {shlex.quote(extracted_path)} && {command}"
@@ -489,5 +631,90 @@ def run_script_evaluator(
         return 0.0
 
     if proc.returncode == 0:
-        return grade_on_zero
-    return grade_on_non_zero
+        return _clamp_grade(grade_on_zero, grade_scale_maximum)
+    return _clamp_grade(grade_on_non_zero, grade_scale_maximum)
+
+
+def run_custom_evaluator(
+    evaluator: dict,
+    exit_code: int,
+    stdout: str,
+    stderr: str,
+    grade_scale_maximum: float = 20.0,
+) -> float:
+    """Execute a plugin-defined custom evaluator in a restricted subprocess.
+
+    The evaluator dict must contain a validated ``source`` string that defines
+    a function ``evaluate(exit_code, stdout, stderr)`` returning a float.
+    """
+    source = str(evaluator.get("source", ""))
+    if not source.strip():
+        _LOGGER.warning("Custom evaluator has empty source; returning 0.0")
+        return 0.0
+
+    payload = {
+        "source": source,
+        "exit_code": exit_code,
+        "stdout": stdout,
+        "stderr": stderr,
+        "grade_scale_maximum": grade_scale_maximum,
+    }
+
+    runner_script = (
+        "import json, sys, math\n"
+        "payload = json.load(sys.stdin)\n"
+        "source = payload['source']\n"
+        "exit_code = payload['exit_code']\n"
+        "stdout = payload['stdout']\n"
+        "stderr = payload['stderr']\n"
+        "grade_scale_maximum = payload['grade_scale_maximum']\n"
+        "\n"
+        "def _restricted_import(name, *args, **kwargs):\n"
+        "    base = name.split('.')[0]\n"
+        "    allowed = {'re', 'math', 'json', 'statistics'}\n"
+        "    if base not in allowed:\n"
+        "        raise ImportError(f'Import of {name} is not allowed')\n"
+        "    return __builtins__.__import__(name, *args, **kwargs)\n"
+        "\n"
+        "namespace = {\n"
+        "    '__builtins__': {\n"
+        "        'True': True, 'False': False, 'None': None,\n"
+        "        'len': len, 'str': str, 'int': int, 'float': float,\n"
+        "        'range': range, 'list': list, 'dict': dict, 'tuple': tuple,\n"
+        "        'set': set, 'abs': abs, 'min': min, 'max': max, 'sum': sum,\n"
+        "        'round': round, 'enumerate': enumerate, 'zip': zip,\n"
+        "        'map': map, 'filter': filter,\n"
+        "        '__import__': _restricted_import,\n"
+        "    }\n"
+        "}\n"
+        "exec(compile(source, '<evaluator>', 'exec'), namespace)\n"
+        "result = float(namespace['evaluate'](exit_code, stdout, stderr))\n"
+        "clamped = max(0.0, min(grade_scale_maximum, result))\n"
+        "print(json.dumps(clamped))\n"
+    )
+
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-c", runner_script],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            timeout=CUSTOM_EVAL_TIMEOUT,
+        )
+    except subprocess.TimeoutExpired:
+        _LOGGER.warning(
+            "Custom evaluator timed out after %ds", CUSTOM_EVAL_TIMEOUT
+        )
+        return 0.0
+
+    if proc.returncode != 0:
+        _LOGGER.warning(
+            "Custom evaluator failed: %s", proc.stderr.strip() or "unknown error"
+        )
+        return 0.0
+
+    try:
+        return float(json.loads(proc.stdout.strip()))
+    except (ValueError, json.JSONDecodeError) as exc:
+        _LOGGER.warning("Custom evaluator returned invalid output: %s", exc)
+        return 0.0

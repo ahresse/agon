@@ -1,5 +1,5 @@
-"""Unit tests for REQ005, REQ006, REQ007 — deterministic grading, agent-based
-grading, and weighted aggregation.
+"""Unit tests for REQ005, REQ006, REQ007, REQ029 — deterministic grading,
+agent-based grading, weighted aggregation, and configurable grade scale maximum.
 """
 
 from __future__ import annotations
@@ -56,6 +56,16 @@ def test_evaluate_deterministic_score_clamped_to_zero_twenty() -> None:
     assert score == 20.0
 
 
+def test_evaluate_deterministic_clamps_to_configurable_maximum() -> None:
+    """evaluate_deterministic shall clamp to a configurable grade_scale_maximum (REQ029)."""
+    data = ExecutionData(stdout="", stderr="", returncode=0)
+    evaluator = lambda e: 999.0  # noqa: E731
+
+    score = evaluate_deterministic(data, evaluator, grade_scale_maximum=10.0)
+
+    assert score == 10.0
+
+
 def test_evaluate_agent_based_returns_score_and_reasoning() -> None:
     """Agent-based grading shall return a numeric score in [0, 20] and a textual
     reasoning string (REQ006)."""
@@ -80,6 +90,16 @@ def test_evaluate_agent_based_clamps_score() -> None:
         score, _ = evaluate_agent_based(prompt="Rate.", source_tree="x")
 
     assert score == 0.0
+
+
+def test_evaluate_agent_based_clamps_to_configurable_maximum() -> None:
+    """evaluate_agent_based shall clamp to a configurable grade_scale_maximum (REQ029)."""
+    with patch("agon.llm.call_ai_agent") as mock_agent:
+        mock_agent.return_value = (25.0, "Too generous.")
+
+        score, _ = evaluate_agent_based("Rate.", "x", grade_scale_maximum=10.0)
+
+    assert score == 10.0
 
 
 def test_aggregate_grades_equal_weights() -> None:

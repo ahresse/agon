@@ -5,6 +5,7 @@ from __future__ import annotations
 import warnings
 from pathlib import Path
 
+from agon.config import load_grading_config
 from agon.container import ContainerManager
 from agon.grading import aggregate_grades, evaluate_agent_based, evaluate_deterministic
 from agon.models import ExecutionData, ExecutionStrategy, Summary, TestResult, TestType
@@ -19,10 +20,16 @@ def run_atomic_tests(
     tests: list,
     extracted_path: str,
     setup_failed: bool = False,
+    grade_scale_maximum: float = 20.0,
 ) -> tuple[list[TestResult], float]:
     """Execute a list of atomic tests inside the container and return results + final grade."""
     from agon.container import container_exec_result
-    from agon.plugins import MAX_AGENT_CONTEXT, run_regex_evaluator, run_script_evaluator
+    from agon.plugins import (
+        MAX_AGENT_CONTEXT,
+        run_custom_evaluator,
+        run_regex_evaluator,
+        run_script_evaluator,
+    )
 
     results: list[TestResult] = []
 
@@ -55,7 +62,7 @@ def run_atomic_tests(
 
             if evaluator_type == "regex":
                 grade = run_regex_evaluator(
-                    container_name, extracted_path, test.evaluator
+                    container_name, extracted_path, test.evaluator, grade_scale_maximum
                 )
                 results.append(
                     TestResult(
@@ -67,7 +74,35 @@ def run_atomic_tests(
                     )
                 )
             elif evaluator_type == "script":
-                grade = run_script_evaluator(container_name, extracted_path, test)
+                grade = run_script_evaluator(
+                    container_name, extracted_path, test, grade_scale_maximum
+                )
+                results.append(
+                    TestResult(
+                        test_id=test.id,
+                        name=test.name,
+                        grade=grade,
+                        weight=test.weight,
+                        exit_code=None,
+                    )
+                )
+            elif evaluator_type == "custom":
+                if not test.command:
+                    _LOGGER.warning(
+                        "Custom evaluator test %s has no command; returning 0.0",
+                        test.id,
+                    )
+                    grade = 0.0
+                else:
+                    command = f"cd {extracted_path!r} && {test.command}"
+                    proc = container_exec_result(container_name, command)
+                    grade = run_custom_evaluator(
+                        test.evaluator,
+                        proc.returncode,
+                        proc.stdout,
+                        proc.stderr,
+                        grade_scale_maximum,
+                    )
                 results.append(
                     TestResult(
                         test_id=test.id,
@@ -86,8 +121,10 @@ def run_atomic_tests(
                     stderr=proc.stderr,
                     returncode=proc.returncode,
                 )
-                default_evaluator = lambda e: 20.0 if e.returncode == 0 else 0.0  # noqa: E731
-                grade = evaluate_deterministic(data, default_evaluator)
+                default_evaluator = (
+                    lambda e: grade_scale_maximum if e.returncode == 0 else 0.0
+                )
+                grade = evaluate_deterministic(data, default_evaluator, grade_scale_maximum)
                 results.append(
                     TestResult(
                         test_id=test.id,
@@ -103,7 +140,9 @@ def run_atomic_tests(
                 container_name,
                 f"find {extracted_path!r} -type f -exec cat {{}} + | head -c {MAX_AGENT_CONTEXT}",
             )
-            grade, reasoning = evaluate_agent_based(test.grading_prompt, proc.stdout)
+            grade, reasoning = evaluate_agent_based(
+                test.grading_prompt, proc.stdout, grade_scale_maximum
+            )
             results.append(
                 TestResult(
                     test_id=test.id,
@@ -131,6 +170,7 @@ def run_framework(
     """Run the full agon workflow and return a structured summary."""
     from agon.plugins import PluginRegistry
 
+    grading_config = load_grading_config()
     registry = PluginRegistry()
     if plugin_paths:
         registry.load_plugins(plugin_paths)
@@ -183,12 +223,14 @@ def run_framework(
             suite.tests,
             extracted_path,
             setup_failed=setup_failed,
+            grade_scale_maximum=grading_config.grade_scale_maximum,
         )
 
         summary = generate_summary(
             test_results,
             final_grade,
             setup_outputs=setup_outputs,
+            grade_scale_maximum=grading_config.grade_scale_maximum,
         )
         return summary
     finally:

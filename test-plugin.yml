@@ -1,0 +1,66 @@
+version: "1.0"
+
+atomic_tests:
+  - id: "correct-archive-format"
+    name: "Correct archive format"
+    test_type: "deterministic"
+    target_path: "."
+    execution_strategy: "pre_extract"
+    weight: 0.5
+    command: "test -n \"$(ls -A .)\""
+    evaluator:
+      type: "script"
+      grade_on_zero_exit: 20.0
+      grade_on_non_zero_exit: 0.0
+
+  - id: "no-todos"
+    name: "No TODOs in source"
+    test_type: "deterministic"
+    target_path: "."
+    execution_strategy: "post_extract"
+    weight: 0.5
+    evaluator:
+      type: "regex"
+      pattern: "TODO|FIXME|XXX"
+      target_file: "*.py"
+      score_on_match: 0.0
+      score_on_no_match: 20.0
+
+  - id: "pylint"
+    name: "Execute pylint"
+    test_type: "deterministic"
+    target_path: "."
+    execution_strategy: "post_extract"
+    weight: 0.5
+    required_debian_packages: ["python3-pylint-common"]
+    command: "pylint --disable=all --enable=E ."
+    evaluator:
+      type: "custom"
+      source: |
+        def evaluate(exit_code, stdout, stderr):
+            # Full score when pylint finds no errors
+            if exit_code == 0:
+                return 100.0
+            # Partial score if only a few errors
+            error_count = stdout.count("E0") + stdout.count("E1")
+            if error_count <= 2:
+                return 80.0
+            return 0.0
+
+  - id: "doc-quality"
+    name: "Documentation quality"
+    test_type: "agent_based"
+    target_path: "."
+    execution_strategy: "post_extract"
+    weight: 0.5
+    grading_prompt: "Rate the documentation clarity from 0 to 100. It must be structured, clear, and comprehensive."
+
+presets:
+  - name: "my-preset"
+    tests:
+      - id: "no-todos"
+        weight: 0.5
+      - id: "pylint"
+        weight: 0.4
+      - id: "doc-quality"
+        weight: 0.1

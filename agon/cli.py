@@ -88,9 +88,10 @@ def main() -> None:
         plugin_paths=args.plugin or None,
     )
 
-    print(f"\nFinal grade: {summary.final_grade:.2f}/20")
+    scale = summary.grade_scale_maximum
+    print(f"\nFinal grade: {summary.final_grade:.2f}/{scale:.0f}")
     for result in summary.results:
-        print(f"  {result.name}: {result.grade:.2f}/20 (weight: {result.weight})")
+        print(f"  {result.name}: {result.grade:.2f}/{scale:.0f} (weight: {result.weight})")
 
 
 if __name__ == "__main__":

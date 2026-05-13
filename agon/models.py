@@ -69,4 +69,5 @@ class Summary:
 
     results: list[TestResult]
     final_grade: float
+    grade_scale_maximum: float = 20.0
     setup_outputs: list = field(default_factory=list)

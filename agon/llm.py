@@ -18,8 +18,8 @@ from typing import Any
 import requests
 
 
-DEFAULT_ENDPOINT = "https://api.openai.com/v1"
-DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_ENDPOINT = "http://10.0.3.1:11434/v1"
+DEFAULT_MODEL = "granite4.1:8b"
 
 
 @dataclass
