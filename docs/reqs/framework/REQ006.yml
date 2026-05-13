@@ -7,7 +7,7 @@ normative: true
 ref: ''
 reviewed: sueDpjuzcEPnVd-aH4Q5lkzMiSoXnwXgxd6jvFWGI58=
 text: |
-  AGON V2 shall support agent-based tests for subjective criteria (e.g. comment
+  The solution shall support agent-based tests for subjective criteria (e.g. comment
   quality or documentation clarity).  An external AI Agent shall receive the test
   prompt together with the extracted source tree (or relevant excerpts), produce a
   numeric grade in the range [0, 20], and append a textual reasoning explaining

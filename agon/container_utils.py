@@ -259,7 +259,7 @@ def container_run(
     image: str = "ubuntu:24.04",
     timeout_seconds: int = 90,
 ) -> str:
-    """Run a zero-argument Python function inside a temporary LXD container.
+    """Run a zero-argument Python function inside a temporary container.
 
     The function source code is executed in the container with ``python3``.
     Returns captured stdout from that execution.

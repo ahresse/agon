@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "agon"
 version = "0.1.0"
-description = "Assess archived Python projects inside ephemeral LXD containers."
+description = "Assess archived Python projects inside ephemeral containers."
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 

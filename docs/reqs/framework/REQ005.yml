@@ -7,6 +7,6 @@ normative: true
 ref: ''
 reviewed: GLSHcl4CbanAaNeTncrHib8EIDChrr35PlJEqtTd6MU=
 text: |
-  AGON V2 shall support deterministic tests whose grade is computed by an
+  The solution shall support deterministic tests whose grade is computed by an
   evaluator function that inspects the command exit code, stdout, and stderr, and
   returns a numeric score in the range [0, 20].

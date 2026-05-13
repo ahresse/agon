@@ -25,7 +25,7 @@ from agon.container_utils import wait_for_container
 BANNER_WIDTH_MAJOR = 72
 BANNER_WIDTH_MINOR = 50
 
-# LXD and container defaults
+# and container defaults
 DEFAULT_LXD_IMAGE = "ubuntu:24.04"
 DEFAULT_CONTAINER_USER = "ubuntu"
 DEFAULT_CONTAINER_ARCHIVE_UPLOAD_PATH = f"/home/{DEFAULT_CONTAINER_USER}/"
@@ -82,7 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="agon",
         description=(
-            "Launch an ephemeral LXD container, upload an archive, extract it, "
+            "Launch an ephemeral container, upload an archive, extract it, "
             "and run code quality assessments."
         ),
     )
@@ -90,7 +90,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--image",
         default=DEFAULT_LXD_IMAGE,
-        help=f"LXD image alias to use (default: {DEFAULT_LXD_IMAGE}).",
+        help=f"image alias to use (default: {DEFAULT_LXD_IMAGE}).",
     )
     parser.add_argument(
         "--container-archive-upload-path",
@@ -145,11 +145,11 @@ def validate_archive_and_env(archive_path: Path, parser: argparse.ArgumentParser
     if not archive_path.exists():
         parser.error(f"Archive not found: {archive_path}")
     if shutil.which("lxc") is None:
-        raise RuntimeError("lxc command not found. Install and configure LXD first.")
+        raise RuntimeError("lxc command not found. Install and configure first.")
 
 
 def sanitize_name(raw_name: str) -> str:
-    """Sanitize a string into a valid LXD container name component."""
+    """Sanitize a string into a valid container name component."""
     cleaned = re.sub(r"[^a-z0-9-]+", "-", raw_name.lower()).strip("-")
     return cleaned or "archive"
 
@@ -196,7 +196,7 @@ def main() -> None:
 
     # Setup container lifecycle
     container_name = generate_container_name(archive_path)
-    print(f"Launching LXD container {container_name} from {args.image}...")
+    print(f"Launching container {container_name} from {args.image}...")
     run_cmd(["lxc", "launch", args.image, container_name])
 
     keep_container = bool(args.keep_container)

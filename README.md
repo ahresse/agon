@@ -1,6 +1,6 @@
 # agon
 
-> Assess a source archive inside an ephemeral Ubuntu LXD container and compute a weighted total grade.
+> Assess a source archive inside an ephemeral Ubuntu container and compute a weighted total grade.
 
 ## Table of Contents
 
@@ -13,12 +13,12 @@
 
 ## About
 
-**agon** launches a fresh Ubuntu LXD container, uploads an archive, extracts it, runs quality checks in isolation, shows colored weighted grades, reports a total grade, opens an interactive shell, and deletes the container unless told to keep it.
+**agon** launches a fresh Ubuntu container, uploads an archive, extracts it, runs quality checks in isolation, shows colored weighted grades, reports a total grade, opens an interactive shell, and deletes the container unless told to keep it.
 
 ## Requirements
 
 - Python 3.9 or later
-- LXD installed and initialized (`lxc` command available)
+- installed and initialized (`lxc` command available)
 
 ## Installation
 
@@ -51,7 +51,7 @@ agon [--version] [--help] [--image IMAGE] [--container-archive-upload-path PATH]
 
 | Option | Description |
 |--------|-------------|
-| `--image` | LXD image alias to launch. Default: `ubuntu:24.04` |
+| `--image` | image alias to launch. Default: `ubuntu:24.04` |
 | `--container-archive-upload-path` | Upload directory in the container. Default: `/home/ubuntu/` |
 | `--container-extract-path` | Extraction directory in the container. Default: `/home/ubuntu/extracted/` |
 | `--keep-container` | Keep the container after checks instead of deleting it. |
@@ -74,7 +74,7 @@ agon ./my-project.zip --keep-container
 
 ## Workflow
 
-1. Launches a new Ubuntu LTS LXD container.
+1. Launches a new Ubuntu LTS container.
 2. Waits for the container to become ready and refreshes apt metadata.
 3. Uploads the archive into the container.
 4. Extracts the project inside the container.

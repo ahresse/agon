@@ -7,7 +7,6 @@ normative: true
 ref: ''
 reviewed: gOOS6hslNK8ziDpiMpO-35a9sDa67dAeOhvBiXWQ3M0=
 text: |
-  AGON V2 shall assess source archives inside ephemeral LXD containers, support
-  the definition and execution of atomic tests with injection, assign grades on
-  a 0-20 scale, aggregate grades with configurable weights, and produce a final
-  summary grade.
+  The solution shall assess source archives inside ephemeral containers, support
+  the definition and execution of atomic tests, aggregate grades with configurable
+  weights, and produce a final summary grade.

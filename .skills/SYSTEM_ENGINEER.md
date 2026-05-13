@@ -1,11 +1,11 @@
-# SKILL: AGON V2 Requirements & System Engineering
+# SKILL: The solution Requirements & System Engineering
 
 ## Project Context
 
 **AGON** is a Python application that evaluates coding assignments packaged as
 archives (`.tar.gz`, `.zip`). The current version (V1) does the following:
 
-1. Spins up an ephemeral LXD container from a configurable image (default
+1. Spins up an ephemeral container from a configurable image (default
    `ubuntu:24.04`).
 2. Uploads the archive into the container.
 3. Extracts it.
@@ -14,7 +14,7 @@ archives (`.tar.gz`, `.zip`). The current version (V1) does the following:
 5. Derives a grade (0–20) for each check, aggregates them with fixed weights,
    prints a colored summary, opens a shell, then destroys the container.
 
-**AGON V2 goals** (from the user's brief and the `REQ*.yml` documents):
+**The solution goals** (from the user's brief and the `REQ*.yml` documents):
 
 - Keep the container lifecycle but make the *test suite* modular and
   user-definable.
@@ -38,7 +38,7 @@ archives (`.tar.gz`, `.zip`). The current version (V1) does the following:
 ### Single parent document for the *framework* only
 
 There is **only one top-level Doorstop document** called `REQ` (stored under
-`docs/reqs/`). It holds *normative* requirements that describe the AGON V2 framework
+`docs/reqs/`). It holds *normative* requirements that describe the The solution framework
 itself: container lifecycle, test orchestration, aggregation, CLI, preset
 registry, injection engine, setup-phase handling, and deterministic/agent test
 runners.

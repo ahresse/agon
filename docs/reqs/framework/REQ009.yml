@@ -7,7 +7,7 @@ normative: true
 ref: ''
 reviewed: yXk3YALcrRi40aPXSo6b3nBmuNjgO8kNVH6709Fr9cM=
 text: |
-  AGON V2 shall support named test-suite presets that bundle a set of atomic
+  The solution shall support named test-suite presets that bundle a set of atomic
   tests with their default weights and configurations, so that users can invoke a
   preset (e.g. “python-project”, “c-project”, “documentation-heavy”) instead of
   manually listing individual tests.

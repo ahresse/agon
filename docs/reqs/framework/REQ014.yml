@@ -7,7 +7,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  AGON V2 shall execute the inferred setup steps inside the LXD container in a
+  The solution shall execute the inferred setup steps inside the container in a
   deterministic order (e.g. dependency installation before compilation).  The
   setup phase output (stdout, stderr, returncode) shall be captured and exposed
   in the final summary so that grading can account for setup failures.
