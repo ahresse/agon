@@ -8,5 +8,5 @@ ref: ''
 reviewed: null
 text: |
   The grade scale maximum is the upper inclusive bound of the numeric grade
-  interval used by Solution. It is a positive finite number configurable via a
+  interval used by the solution. It is a positive finite number configurable via a
   grading configuration file and defaults to 20.

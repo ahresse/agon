@@ -1,12 +1,23 @@
 active: true
 derived: false
-header: ''
+header: 'Deterministic atomic test evaluated from command output'
 level: 1.5
 links: []
 normative: true
 ref: ''
-reviewed: GLSHcl4CbanAaNeTncrHib8EIDChrr35PlJEqtTd6MU=
+reviewed: null
 text: |
-  The solution shall support deterministic tests whose grade is computed by an
-  evaluator function that inspects the command exit code, stdout, and stderr, and
-  returns a numeric score in the range [0, 20].
+  the solution SHALL support deterministic atomic tests whose grade is computed by
+  an evaluator function that inspects the command exit code, stdout, and stderr.
+evaluation:
+  type: deterministic
+  method: exit_code_assertion
+  success_criteria: |
+    the evaluator reproducibly maps a known exit code, stdout, and stderr to a
+    grade in the closed interval [0, grade_scale_maximum]
+  failure_mode: assign zero grade and log evaluator error
+  guardrails:
+    - evaluator execution timeout 30s per call
+    - command execution timeout 300s per atomic test
+    - network egress blocked by default for the command execution
+  human_escalation: evaluator raises an unhandled exception or exceeds the 30s timeout

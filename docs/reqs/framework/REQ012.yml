@@ -1,11 +1,23 @@
 active: true
 derived: false
-header: ''
-level: 1.12
+header: 'Ephemeral LXD container deletion after assessment'
+level: '1.12'
 links: []
 normative: true
 ref: ''
-reviewed: 5wCB1vDLzFODjhJqlY3acc7XMQEwSQ8SMnvwmWSgw90=
+reviewed: null
 text: |
-  The solution shall delete the ephemeral container after all assessments finish,
-  unless the user explicitly requests to keep it for post-mortem inspection.
+  the solution SHALL delete the ephemeral LXD container after all atomic tests
+  complete, unless the user specified the --keep-container CLI flag.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    the container name does not appear in lxc list within 30s of test completion
+    when --keep-container is absent
+  failure_mode: emit critical warning log and retry deletion once with backoff
+  guardrails:
+    - deletion timeout: 30s
+    - force flag forbidden (prevent data loss on mounted volumes)
+    - pre-deletion snapshot captured if --keep-container is used
+  human_escalation: deletion fails after retry or container enters ERROR state

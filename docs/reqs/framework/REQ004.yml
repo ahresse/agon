@@ -1,13 +1,24 @@
 active: true
 derived: false
-header: ''
+header: 'Injection of auxiliary files into LXD container'
 level: 1.4
 links: []
 normative: true
 ref: ''
-reviewed: nzKxqnThbWkBRdgLLvIB2OmcXTEc424oILFofcj8kMc=
+reviewed: null
 text: |
-  The solution shall support test injection mechanisms so that atomic tests can
-  dynamically insert auxiliary files (e.g. test harnesses, mock data, or
-  configuration files) into the container before or after extraction, without
-  modifying the original archive.
+  the solution SHALL support injection so that atomic tests can dynamically insert
+  auxiliary files into the LXD container before or after extraction without
+  modifying the original source archive.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    after injection, the auxiliary file exists inside the container at the
+    specified path and the original source archive on the host is unchanged
+  failure_mode: abort the affected atomic test and log the injection error
+  guardrails:
+    - injection path validated against path traversal
+    - auxiliary file size limit 10 MiB
+    - write target restricted to the container extraction path
+  human_escalation: injection overwrites a critical system path inside the container

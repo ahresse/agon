@@ -1,13 +1,20 @@
 active: true
 derived: false
-header: ''
+header: 'Named test-suite presets'
 level: 1.9
 links: []
 normative: true
 ref: ''
-reviewed: yXk3YALcrRi40aPXSo6b3nBmuNjgO8kNVH6709Fr9cM=
+reviewed: null
 text: |
-  The solution shall support named test-suite presets that bundle a set of atomic
-  tests with their default weights and configurations, so that users can invoke a
-  preset (e.g. “python-project”, “c-project”, “documentation-heavy”) instead of
-  manually listing individual tests.
+  the solution SHALL support named test-suite presets that bundle a set of atomic
+  tests with their default weights and configurations.
+evaluation:
+  type: deterministic
+  method: unit_test
+  success_criteria: |
+    invoking a test-suite preset by name executes exactly the atomic tests and
+    weights defined in that preset
+  failure_mode: emit structured error and abort assessment initialization
+  guardrails: preset name validated against path traversal and injection
+  human_escalation: preset name collides with a system reserved identifier

@@ -1,12 +1,25 @@
 active: true
 derived: false
-header: ''
+header: 'Source archive upload and extraction into LXD container'
 level: 1.2
 links: []
 normative: true
 ref: ''
-reviewed: gFaZVCzc8EUOv0YM8yP31lqc9zPFQ6fKG38axXMBPJk=
+reviewed: null
 text: |
-  The solution shall accept an archive file (e.g. .tar.gz or .zip), upload it into a
-  fresh container, extract it, and make the source tree available for
-  assessment.
+  the solution SHALL accept a source archive from the host filesystem, upload it
+  into a fresh LXD container, extract it at the configured extraction path, and
+  make the resulting source tree readable for subsequent atomic tests.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    after execution, the container contains the extracted source tree at the
+    configured path with at least one file and exit code 0 from the extraction
+    command
+  failure_mode: abort assessment and log the extraction error
+  guardrails:
+    - supported archive formats limited to .tar.gz, .zip
+    - extraction path validated against path traversal
+    - container readiness confirmed via cloud-init status --wait
+  human_escalation: container fails to reach ready state within 120s

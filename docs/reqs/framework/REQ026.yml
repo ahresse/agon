@@ -9,7 +9,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL expose a plugin loader interface that accepts a filesystem
+  the solution SHALL expose a plugin loader interface that accepts a filesystem
   path, validates the plugin file, and returns a structured representation of
   the atomic tests and test-suite presets defined therein.
 evaluation:

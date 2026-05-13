@@ -9,7 +9,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL require that every atomic test defined in a plugin
+  the solution SHALL require that every atomic test defined in a plugin
   specifies a unique identifier, a human-readable name, a test type, a target
   path within the extracted source tree, an execution strategy, and a weight.
 evaluation:

@@ -1,13 +1,23 @@
 active: true
 derived: false
-header: ''
+header: 'Setup failure handling for dependent atomic tests'
 level: '1.15'
 links: []
 normative: true
 ref: ''
 reviewed: null
 text: |
-  If any setup step fails with a non-zero exit code, The solution shall record the
-  failure, abort the remaining setup steps, and assign a zero grade to all
-  dependent atomic tests while still allowing independent tests to run.  The CLI
-  shall emit a clear warning but must not crash.
+  the solution SHALL abort the remaining setup steps and assign a zero grade to all
+  dependent atomic tests when any setup step fails with a non-zero exit code.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    after a simulated setup failure, dependent atomic tests receive grade 0 and
+    are not executed; independent atomic tests continue execution
+  failure_mode: abort the entire assessment and emit structured error log
+  guardrails:
+    - dependency graph validated at assessment initialization
+    - zero grade assigned only to tests marked as dependent on the failed step
+    - CLI emits a warning but does not crash
+  human_escalation: setup failure causes an uncaught exception in the CLI

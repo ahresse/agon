@@ -1,12 +1,23 @@
 active: true
 derived: false
-header: ''
+header: 'Structured summary of assessment results'
 level: 1.8
 links: []
 normative: true
 ref: ''
-reviewed: a0PnRAA39CN8KO-Rz0FdjY7SaPtr7OBAWKDzE7plP3k=
+reviewed: null
 text: |
-  The solution shall generate a structured summary containing, for each executed
-  atomic test, its identifier, name, grade, weight, exit code (for deterministic
-  tests), AI reasoning (for agent-based tests), and the final weighted grade.
+  the solution SHALL generate a structured summary containing, for each executed
+  atomic test, its identifier, name, grade, weight, exit code, AI reasoning,
+  and the final weighted grade.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    the generated summary contains all listed fields for every executed atomic
+    test and the final weighted grade, serialized as JSON
+  failure_mode: emit critical warning and output partial summary
+  guardrails:
+    - summary size limit 10 MiB
+    - JSON schema validated before persistence
+  human_escalation: summary serialization raises an unhandled exception

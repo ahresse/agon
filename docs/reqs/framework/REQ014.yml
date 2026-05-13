@@ -1,13 +1,23 @@
 active: true
 derived: false
-header: ''
+header: 'Deterministic execution of inferred setup steps'
 level: '1.14'
 links: []
 normative: true
 ref: ''
 reviewed: null
 text: |
-  The solution shall execute the inferred setup steps inside the container in a
-  deterministic order (e.g. dependency installation before compilation).  The
-  setup phase output (stdout, stderr, returncode) shall be captured and exposed
-  in the final summary so that grading can account for setup failures.
+  the solution SHALL execute the inferred setup steps inside the LXD container in a
+  deterministic order before any atomic test is executed.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    the inferred setup steps execute in the documented order and the container
+    reaches a ready state for assessment
+  failure_mode: abort remaining setup steps and log the failing command
+  guardrails:
+    - setup phase timeout 600s
+    - each step exit code captured
+    - dependency installation ordered before compilation steps
+  human_escalation: setup phase exceeds 600s or a step returns non-zero exit code

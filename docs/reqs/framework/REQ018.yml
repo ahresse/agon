@@ -8,7 +8,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL require that each plugin is contained in exactly one file on
+  the solution SHALL require that each plugin is contained in exactly one file on
   the host filesystem.
 evaluation:
   type: deterministic

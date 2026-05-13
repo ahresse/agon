@@ -1,12 +1,23 @@
 active: true
 derived: false
-header: ''
-level: 1.1
+header: 'Debian package installation during setup phase'
+level: '1.10'
 links: []
 normative: true
 ref: ''
-reviewed: vncxf_E_WP1aRKZjdmosky0RBGZG5UHtEE5pFM3LkkU=
+reviewed: null
 text: |
-  The solution shall automatically install required Debian packages for each atomic
-  test inside the container when the package is missing, or skip the test
-  with a zero grade if installation fails.
+  the solution SHALL install required Debian packages inside the LXD container
+  during the setup phase of each atomic test when the package is missing.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    the missing package is present in the container after the setup phase and
+    the apt install command returns exit code 0
+  failure_mode: skip the atomic test and assign a zero grade
+  guardrails:
+    - package installation timeout 300s
+    - package name validated against allowed character set
+    - network egress allowed only to configured apt mirrors
+  human_escalation: package installation fails after timeout or returns non-zero exit code

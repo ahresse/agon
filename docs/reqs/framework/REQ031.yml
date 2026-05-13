@@ -9,7 +9,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL read the grade_scale_maximum from the grading configuration
+  the solution SHALL read the grade_scale_maximum from the grading configuration
   file, defaulting to 20 when the file or the key is absent.
 evaluation:
   type: deterministic

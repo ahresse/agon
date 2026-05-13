@@ -9,13 +9,13 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL allow a plugin to define one or more test-suite presets
+  the solution SHALL allow a plugin to define one or more test-suite presets
   that reference atomic tests defined in the same plugin or in other plugins.
 evaluation:
   type: deterministic
   method: integration_test
   success_criteria: |
-    after loading a valid plugin, Solution registers all test-suite presets
+    after loading a valid plugin, the solution registers all test-suite presets
     defined therein, including cross-plugin references
   failure_mode: skip the malformed preset definition and continue loading
   guardrails: cross-plugin references validated at load time

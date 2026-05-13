@@ -8,7 +8,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHOULD tolerate unknown fields in a plugin file when the plugin
+  the solution SHOULD tolerate unknown fields in a plugin file when the plugin
   version is recognized, preserving forward compatibility across format
   revisions.
 evaluation:
@@ -19,6 +19,6 @@ evaluation:
     identical atomic test definitions compared to a file without those fields
   failure_mode: warn about unknown fields and continue loading
   guardrails:
-    - unknown fields must not override known fields
+    - unknown fields SHALL NOT override known fields
     - depth limit 3 for nested structures
   human_escalation: unknown field causes parsing exception

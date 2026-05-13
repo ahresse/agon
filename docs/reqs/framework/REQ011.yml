@@ -1,12 +1,24 @@
 active: true
 derived: false
-header: ''
-level: 1.11
+header: 'Command-line interface for assessment invocation'
+level: '1.11'
 links: []
 normative: true
 ref: ''
-reviewed: PFjfY7Grtug6kR3kfxs6h-HvPpnTUC1VFmGoMPtsc1Y=
+reviewed: null
 text: |
-  The solution shall provide a command-line interface that accepts the source archive
-  path, an optional image alias, optional container paths, an optional
-  keep-container flag, and an optional test-suite preset name.
+  the solution SHALL provide a command-line interface that accepts the source archive
+  path, an optional image alias, an optional keep-container flag, and an optional
+  test-suite preset name.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    the CLI parses all listed arguments without error and forwards them to the
+    assessment engine
+  failure_mode: emit usage message and exit with non-zero status
+  guardrails:
+    - source archive path validated with pathlib.Path.exists()
+    - image alias validated against allowed character set
+    - keep-container flag is a boolean toggle
+  human_escalation: never

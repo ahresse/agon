@@ -1,6 +1,6 @@
 active: true
 derived: false
-header: 'Definition of a plugin in Solution'
+header: 'Definition of a plugin in the solution'
 level: '1.17'
 links: []
 normative: false
@@ -9,5 +9,5 @@ reviewed: null
 text: |
   A plugin is a single file on the host filesystem that defines one or more
   atomic tests and/or one or more test-suite presets for assessing a source
-  archive. Solution discovers and loads plugins at runtime to extend the
+  archive. the solution discovers and loads plugins at runtime to extend the
   set of available assessments.

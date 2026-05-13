@@ -1,14 +1,25 @@
 active: true
 derived: false
-header: ''
+header: 'Setup instruction file scanning and inference'
 level: '1.13'
 links: []
 normative: true
 ref: ''
 reviewed: null
 text: |
-  The solution shall scan the extracted source tree for well-known setup instruction
-  files (e.g. README, SETUP.md, Makefile, requirements.txt, package.json,
-  pyproject.toml, Cargo.toml, setup.sh, install.sh, CMakeLists.txt) and parse
-  them to infer the required build, dependency-install, or configuration steps
-  before any assessment command is executed.
+  the solution SHALL scan the extracted source tree for well-known setup instruction
+  files and parse them to infer the required build, dependency-install, or
+  configuration steps before any atomic test is executed.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    for a source tree containing a known setup instruction file, the inferred
+    steps match the expected sequence of build or install commands
+  failure_mode: skip the setup inference and proceed with no inferred steps
+  guardrails:
+    - scan depth limited to the extraction root and one subdirectory level
+    - supported file name whitelist (Makefile, requirements.txt, package.json,
+      pyproject.toml, Cargo.toml, setup.sh, install.sh, CMakeLists.txt)
+    - file size limit 1 MiB per scanned file
+  human_escalation: setup instruction file contains malformed or executable content

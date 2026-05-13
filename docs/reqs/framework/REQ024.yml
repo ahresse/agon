@@ -9,7 +9,7 @@ normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL validate every plugin against a published schema that
+  the solution SHALL validate every plugin against a published schema that
   includes a mandatory version field indicating the plugin format revision.
 evaluation:
   type: deterministic

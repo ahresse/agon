@@ -3,21 +3,24 @@ derived: true
 header: 'Plugin supports Python-script deterministic atomic tests'
 level: '1.22'
 links:
-  - REQ019
   - REQ005
+  - REQ019
+  - REQ028
+  - REQ029
 normative: true
 ref: ''
 reviewed: null
 text: |
-  Solution SHALL support deterministic atomic tests defined in a plugin that
+  the solution SHALL support deterministic atomic tests defined in a plugin that
   execute a Python script inside the LXD container and compute a grade in the
-  closed interval [0, 20] from the script's exit code, stdout, and stderr.
+  closed interval [0, grade_scale_maximum] from the script's exit code, stdout,
+  and stderr.
 evaluation:
   type: deterministic
   method: exit_code_assertion
   success_criteria: |
     script exit code, stdout, and stderr are captured and mapped to a grade
-    in [0, 20] using the evaluator configured in the plugin
+    in [0, grade_scale_maximum] using the evaluator configured in the plugin
   failure_mode: assign zero grade and log script execution error
   guardrails:
     - script execution timeout 300s

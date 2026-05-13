@@ -1,12 +1,12 @@
 active: true
 derived: false
-header: ''
+header: 'Assessment framework mission statement'
 level: 1.1
 links: []
-normative: true
+normative: false
 ref: ''
-reviewed: gOOS6hslNK8ziDpiMpO-35a9sDa67dAeOhvBiXWQ3M0=
+reviewed: null
 text: |
-  The solution shall assess source archives inside ephemeral containers, support
-  the definition and execution of atomic tests, aggregate grades with configurable
-  weights, and produce a final summary grade.
+  the solution is an assessment framework that evaluates source archives inside
+  ephemeral LXD containers by executing atomic tests, aggregating grades with
+  configurable weights, and producing a final summary grade.
