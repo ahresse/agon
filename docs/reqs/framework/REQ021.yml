@@ -1,0 +1,26 @@
+active: true
+derived: true
+header: 'Plugin supports regex-based deterministic atomic tests'
+level: '1.21'
+links:
+  - REQ019
+  - REQ005
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL support deterministic atomic tests defined in a plugin
+  whose evaluator applies a regular expression to a target file within the
+  extracted source tree to compute a grade in the closed interval [0, 20].
+evaluation:
+  type: deterministic
+  method: unit_test
+  success_criteria: |
+    for a known source tree and a known regex, the evaluator reproducibly
+    produces the expected grade in [0, 20]
+  failure_mode: assign zero grade and log regex compilation or execution error
+  guardrails:
+    - regex execution timeout 5s per file
+    - target path validated against path traversal
+    - regex engine capped to linear-time complexity where possible
+  human_escalation: regex causes catastrophic backtracking (CPU > 100% for 5s)

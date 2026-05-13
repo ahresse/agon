@@ -1,0 +1,26 @@
+active: true
+derived: true
+header: 'Plugin loader exposes a standard interface for discovery'
+level: '1.26'
+links:
+  - REQ017
+  - REQ018
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL expose a plugin loader interface that accepts a filesystem
+  path, validates the plugin file, and returns a structured representation of
+  the atomic tests and test-suite presets defined therein.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    loader returns a structured object containing all atomic tests and presets
+    from a valid plugin file; returns a structured error for invalid files
+  failure_mode: abort assessment initialization and emit structured error log
+  guardrails:
+    - file size limit 1 MiB
+    - path validated against path traversal
+    - supported format whitelist
+  human_escalation: plugin file causes memory exhaustion during parsing

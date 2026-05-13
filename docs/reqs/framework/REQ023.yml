@@ -1,0 +1,29 @@
+active: true
+derived: true
+header: 'Plugin supports agent-based atomic tests with local LLM'
+level: '1.23'
+links:
+  - REQ019
+  - REQ006
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL support agent-based atomic tests defined in a plugin that
+  invoke a local LLM agent to analyze the extracted source tree and produce a
+  grade in the closed interval [0, 20] with textual reasoning.
+evaluation:
+  type: probabilistic
+  method: model_inference_with_temperature
+  success_criteria: |
+    grade is a number in [0, 20] with ≤ 2 decimal places; reasoning text is
+    non-empty and ≥ 20 characters
+  failure_mode: escalate to human review; do not persist grade
+  guardrails:
+    - temperature: 0.3
+    - max_tokens: 4096
+    - network egress blocked for the inference call
+    - local LLM context size capped at 128 KiB per excerpt
+  human_escalation: |
+    grade < 5 or grade > 18, reasoning missing, or grade variance > 4 points
+    across 3 independent runs

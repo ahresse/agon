@@ -1,0 +1,19 @@
+active: true
+derived: true
+header: 'Plugin is contained in a single file'
+level: '1.18'
+links:
+  - REQ017
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL require that each plugin is contained in exactly one file on
+  the host filesystem.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: plugin loader rejects a directory or multi-file bundle and accepts a single file
+  failure_mode: reject plugin candidate and emit structured error log
+  guardrails: file path validated with pathlib.Path.is_file()
+  human_escalation: never

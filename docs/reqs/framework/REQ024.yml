@@ -1,0 +1,23 @@
+active: true
+derived: true
+header: 'Plugin format uses a standard schema with version field'
+level: '1.24'
+links:
+  - REQ017
+  - REQ018
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL validate every plugin against a published schema that
+  includes a mandatory version field indicating the plugin format revision.
+evaluation:
+  type: deterministic
+  method: unit_test
+  success_criteria: |
+    plugin loading succeeds when the version field matches a supported revision;
+    loading fails with a clear structured error when the version is missing or
+    unsupported
+  failure_mode: reject plugin and emit structured error log
+  guardrails: supported version whitelist validated before parsing
+  human_escalation: never
