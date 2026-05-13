@@ -1,0 +1,13 @@
+active: true
+derived: false
+header: ''
+level: '1.15'
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: |
+  If any setup step fails with a non-zero exit code, AGON V2 shall record the
+  failure, abort the remaining setup steps, and assign a zero grade to all
+  dependent atomic tests while still allowing independent tests to run.  The CLI
+  shall emit a clear warning but must not crash.

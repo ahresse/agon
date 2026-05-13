@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: ''
+level: 1.11
+links: []
+normative: true
+ref: ''
+reviewed: PFjfY7Grtug6kR3kfxs6h-HvPpnTUC1VFmGoMPtsc1Y=
+text: |
+  AGON V2 shall provide a command-line interface that accepts the source archive
+  path, an optional LXD image alias, optional container paths, an optional
+  keep-container flag, and an optional test-suite preset name.

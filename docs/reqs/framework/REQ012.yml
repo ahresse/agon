@@ -1,0 +1,11 @@
+active: true
+derived: false
+header: ''
+level: 1.12
+links: []
+normative: true
+ref: ''
+reviewed: 5wCB1vDLzFODjhJqlY3acc7XMQEwSQ8SMnvwmWSgw90=
+text: |
+  AGON V2 shall delete the ephemeral LXD container after all assessments finish,
+  unless the user explicitly requests to keep it for post-mortem inspection.

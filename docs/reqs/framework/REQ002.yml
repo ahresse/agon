@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: ''
+level: 1.2
+links: []
+normative: true
+ref: ''
+reviewed: gFaZVCzc8EUOv0YM8yP31lqc9zPFQ6fKG38axXMBPJk=
+text: |
+  AGON V2 shall accept an archive file (e.g. .tar.gz or .zip), upload it into a
+  fresh LXD container, extract it, and make the source tree available for
+  assessment.

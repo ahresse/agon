@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: ''
+level: 1.7
+links: []
+normative: true
+ref: ''
+reviewed: CpqszCTwO0F4smQsuobQjsRAi-XgYi2JGNOQ2DIms-M=
+text: |
+  AGON V2 shall aggregate all executed atomic test grades into a weighted final
+  grade on the 0–20 scale.  The weights must be configurable on a per-test basis
+  and the aggregation formula must be exposed as a public utility.

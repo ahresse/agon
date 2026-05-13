@@ -7,7 +7,10 @@ name = "agon"
 version = "0.1.0"
 description = "Assess archived Python projects inside ephemeral LXD containers."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10,<3.15"
 
 [project.scripts]
 agon = "agon.cli:main"
+
+[tool.poetry.dependencies]
+doorstop = "^3.1"

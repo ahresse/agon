@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: ''
+level: '1.16'
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: |
+  AGON V2 shall allow users to bypass the automatic setup phase via a CLI flag
+  (e.g. `--skip-setup`) or a per-test-suite preset option, so that tests can be
+  run against a raw source tree when required.

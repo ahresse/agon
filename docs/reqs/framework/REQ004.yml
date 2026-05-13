@@ -1,0 +1,13 @@
+active: true
+derived: false
+header: ''
+level: 1.4
+links: []
+normative: true
+ref: ''
+reviewed: nzKxqnThbWkBRdgLLvIB2OmcXTEc424oILFofcj8kMc=
+text: |
+  AGON V2 shall support test injection mechanisms so that atomic tests can
+  dynamically insert auxiliary files (e.g. test harnesses, mock data, or
+  configuration files) into the container before or after extraction, without
+  modifying the original archive.

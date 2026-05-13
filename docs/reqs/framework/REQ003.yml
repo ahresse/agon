@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: ''
+level: 1.3
+links: []
+normative: true
+ref: ''
+reviewed: hcIqaxYVeiL4bd5oxqr2qGNPrFk21uLMoCzwD9mO7zc=
+text: |
+  AGON V2 shall allow users to define atomic tests, each comprising a unique
+  identifier, a human-readable name, a test type (deterministic or agent-based),
+  a command to execute inside the container (for deterministic tests), an AI
+  grading prompt (for agent-based tests), an expected target path within the
+  extracted source tree, an execution strategy (pre-extract / post-extract /
+  independent), and a weight in the final aggregation.

@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: ''
+level: 1.8
+links: []
+normative: true
+ref: ''
+reviewed: a0PnRAA39CN8KO-Rz0FdjY7SaPtr7OBAWKDzE7plP3k=
+text: |
+  AGON V2 shall generate a structured summary containing, for each executed
+  atomic test, its identifier, name, grade, weight, exit code (for deterministic
+  tests), AI reasoning (for agent-based tests), and the final weighted grade.

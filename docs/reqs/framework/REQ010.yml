@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: ''
+level: 1.1
+links: []
+normative: true
+ref: ''
+reviewed: vncxf_E_WP1aRKZjdmosky0RBGZG5UHtEE5pFM3LkkU=
+text: |
+  AGON V2 shall automatically install required Debian packages for each atomic
+  test inside the LXD container when the package is missing, or skip the test
+  with a zero grade if installation fails.

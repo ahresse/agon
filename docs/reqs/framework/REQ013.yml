@@ -1,0 +1,14 @@
+active: true
+derived: false
+header: ''
+level: '1.13'
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: |
+  AGON V2 shall scan the extracted source tree for well-known setup instruction
+  files (e.g. README, SETUP.md, Makefile, requirements.txt, package.json,
+  pyproject.toml, Cargo.toml, setup.sh, install.sh, CMakeLists.txt) and parse
+  them to infer the required build, dependency-install, or configuration steps
+  before any assessment command is executed.
