@@ -1,0 +1,25 @@
+active: true
+derived: true
+header: 'Grade scale maximum read from grading configuration file'
+level: '1.31'
+links:
+  - REQ028
+  - REQ030
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL read the grade_scale_maximum from the grading configuration
+  file, defaulting to 20 when the file or the key is absent.
+evaluation:
+  type: deterministic
+  method: integration_test
+  success_criteria: |
+    grade_scale_maximum equals the value stored in `.agon` when the file and
+    key are present; equals 20 when either is absent
+  failure_mode: abort assessment initialization and emit structured error log
+  guardrails:
+    - `.agon` file size limit 128 KiB
+    - key value parsed as decimal number
+    - path traversal checks on file resolution
+  human_escalation: `.agon` parse error or file permission denied

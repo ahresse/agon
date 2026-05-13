@@ -1,0 +1,26 @@
+active: true
+derived: true
+header: 'Atomic tests grade bounded by grade scale maximum'
+level: '1.29'
+links:
+  - REQ028
+  - REQ005
+  - REQ006
+  - REQ019
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Solution SHALL require that every atomic test produces a grade in the closed
+  interval [0, grade_scale_maximum], regardless of test type.
+evaluation:
+  type: deterministic
+  method: unit_test
+  success_criteria: |
+    for configured grade_scale_maximum values of 10, 20, and 100, every
+    evaluator caps or rejects grades outside [0, grade_scale_maximum]
+  failure_mode: abort the offending atomic test and assign a zero grade
+  guardrails: |
+    grade_scale_maximum validated as a positive finite number not exceeding
+    10000 before any test execution
+  human_escalation: grade_scale_maximum is NaN, negative, or zero

@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: 'Definition of grading configuration file'
+level: '1.30'
+links: []
+normative: false
+ref: ''
+reviewed: null
+text: |
+  The grading configuration file is a file named `.agon` located at the root of
+  the working directory. It contains key-value pairs that control assessment
+  parameters, including the grade scale maximum.
