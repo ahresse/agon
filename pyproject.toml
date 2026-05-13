@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "Assess archived Python projects inside ephemeral containers."
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
+dependencies = [
+    "requests>=2.30",
+]
 
 [project.scripts]
 agon = "agon.cli:main"

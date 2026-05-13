@@ -11,13 +11,10 @@ def evaluate_deterministic(execution_data: ExecutionData, evaluator) -> float:
     return max(0.0, min(20.0, raw_score))
 
 
-def call_ai_agent(prompt: str, source_tree: str) -> tuple[float, str]:
-    """Placeholder for an external AI grading agent."""
-    raise NotImplementedError("call_ai_agent must be provided or mocked")
-
-
 def evaluate_agent_based(prompt: str, source_tree: str) -> tuple[float, str]:
     """Request an AI grade for *prompt* against *source_tree* and clamp to [0, 20]."""
+    from agon.llm import call_ai_agent
+
     score, reasoning = call_ai_agent(prompt, source_tree)
     return max(0.0, min(20.0, score)), reasoning
 

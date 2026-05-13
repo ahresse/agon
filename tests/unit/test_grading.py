@@ -59,7 +59,7 @@ def test_evaluate_deterministic_score_clamped_to_zero_twenty() -> None:
 def test_evaluate_agent_based_returns_score_and_reasoning() -> None:
     """Agent-based grading shall return a numeric score in [0, 20] and a textual
     reasoning string (REQ006)."""
-    with patch("agon.grading.call_ai_agent") as mock_agent:
+    with patch("agon.llm.call_ai_agent") as mock_agent:
         mock_agent.return_value = (18.5, "Well documented but lacks examples.")
 
         score, reasoning = evaluate_agent_based(
@@ -74,7 +74,7 @@ def test_evaluate_agent_based_returns_score_and_reasoning() -> None:
 
 def test_evaluate_agent_based_clamps_score() -> None:
     """If the AI agent returns an out-of-range score, it shall be clamped."""
-    with patch("agon.grading.call_ai_agent") as mock_agent:
+    with patch("agon.llm.call_ai_agent") as mock_agent:
         mock_agent.return_value = (-5.0, "Too harsh.")
 
         score, _ = evaluate_agent_based(prompt="Rate.", source_tree="x")
