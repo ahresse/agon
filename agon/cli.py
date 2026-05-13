@@ -59,6 +59,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Skip automatic setup phase.",
     )
+    parser.add_argument(
+        "--plugin",
+        action="append",
+        default=[],
+        help=(
+            "Path to a plugin file (.yaml) defining atomic tests and/or presets. "
+            "Can be specified multiple times."
+        ),
+    )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
@@ -76,6 +85,7 @@ def main() -> None:
         container_extract_path=args.container_extract_path,
         keep_container=args.keep_container,
         skip_setup=args.skip_setup,
+        plugin_paths=args.plugin or None,
     )
 
     print(f"\nFinal grade: {summary.final_grade:.2f}/20")

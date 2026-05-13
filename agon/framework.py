@@ -22,6 +22,7 @@ def run_atomic_tests(
 ) -> tuple[list[TestResult], float]:
     """Execute a list of atomic tests inside the container and return results + final grade."""
     from agon.container import container_exec_result
+    from agon.plugins import MAX_AGENT_CONTEXT, run_regex_evaluator, run_script_evaluator
 
     results: list[TestResult] = []
 
@@ -50,29 +51,57 @@ def run_atomic_tests(
             continue
 
         if test.test_type == TestType.DETERMINISTIC:
-            command = f"cd {extracted_path!r} && {test.command}"
-            proc = container_exec_result(container_name, command)
-            data = ExecutionData(
-                stdout=proc.stdout,
-                stderr=proc.stderr,
-                returncode=proc.returncode,
-            )
-            evaluator = lambda e: 20.0 if e.returncode == 0 else 0.0  # noqa: E731
-            grade = evaluate_deterministic(data, evaluator)
-            results.append(
-                TestResult(
-                    test_id=test.id,
-                    name=test.name,
-                    grade=grade,
-                    weight=test.weight,
-                    exit_code=proc.returncode,
+            evaluator_type = (test.evaluator or {}).get("type") if test.evaluator else None
+
+            if evaluator_type == "regex":
+                grade = run_regex_evaluator(
+                    container_name, extracted_path, test.evaluator
                 )
-            )
+                results.append(
+                    TestResult(
+                        test_id=test.id,
+                        name=test.name,
+                        grade=grade,
+                        weight=test.weight,
+                        exit_code=None,
+                    )
+                )
+            elif evaluator_type == "script":
+                grade = run_script_evaluator(container_name, extracted_path, test)
+                results.append(
+                    TestResult(
+                        test_id=test.id,
+                        name=test.name,
+                        grade=grade,
+                        weight=test.weight,
+                        exit_code=None,
+                    )
+                )
+            else:
+                # Default deterministic: run a shell command and grade on exit code
+                command = f"cd {extracted_path!r} && {test.command}"
+                proc = container_exec_result(container_name, command)
+                data = ExecutionData(
+                    stdout=proc.stdout,
+                    stderr=proc.stderr,
+                    returncode=proc.returncode,
+                )
+                default_evaluator = lambda e: 20.0 if e.returncode == 0 else 0.0  # noqa: E731
+                grade = evaluate_deterministic(data, default_evaluator)
+                results.append(
+                    TestResult(
+                        test_id=test.id,
+                        name=test.name,
+                        grade=grade,
+                        weight=test.weight,
+                        exit_code=proc.returncode,
+                    )
+                )
         else:
-            # Agent-based: gather source tree excerpt and evaluate
+            # Agent-based: gather source tree excerpt (capped at 128 KiB) and evaluate
             proc = container_exec_result(
                 container_name,
-                f"find {extracted_path!r} -type f | head -c 10000",
+                f"find {extracted_path!r} -type f -exec cat {{}} + | head -c {MAX_AGENT_CONTEXT}",
             )
             grade, reasoning = evaluate_agent_based(test.grading_prompt, proc.stdout)
             results.append(
@@ -97,8 +126,15 @@ def run_framework(
     container_extract_path: str | None = None,
     keep_container: bool = False,
     skip_setup: bool = False,
+    plugin_paths: list[str] | None = None,
 ) -> Summary:
     """Run the full agon workflow and return a structured summary."""
+    from agon.plugins import PluginRegistry
+
+    registry = PluginRegistry()
+    if plugin_paths:
+        registry.load_plugins(plugin_paths)
+
     mgr = ContainerManager()
     container_name = mgr.launch(image or "ubuntu:24.04")
 
@@ -141,7 +177,7 @@ def run_framework(
                     RuntimeWarning,
                 )
 
-        suite = load_preset(preset)
+        suite = load_preset(preset, registry=registry)
         test_results, final_grade = run_atomic_tests(
             container_name,
             suite.tests,

@@ -37,6 +37,7 @@ class AtomicTest:
     execution_strategy: ExecutionStrategy = ExecutionStrategy.POST_EXTRACT
     weight: float = 1.0
     required_debian_packages: Tuple[str, ...] = ()
+    evaluator: Optional[dict] = None
 
 
 @dataclass(frozen=True)

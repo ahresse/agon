@@ -89,8 +89,16 @@ PRESETS: dict[str, TestSuitePreset] = {
 }
 
 
-def load_preset(name: str) -> TestSuitePreset:
-    """Retrieve a preset by name."""
+def load_preset(
+    name: str, registry=None
+) -> TestSuitePreset:
+    """Retrieve a preset by name.
+
+    If *registry* is provided (a ``PluginRegistry``), plugin-defined presets
+    are checked before the built-in registry.
+    """
+    if registry is not None and name in registry.presets:
+        return registry.presets[name]
     if name not in PRESETS:
         raise KeyError(f"Unknown preset: {name}")
     return PRESETS[name]

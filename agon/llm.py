@@ -111,7 +111,7 @@ def call_ai_agent(prompt: str, source_tree: str) -> tuple[float, str]:
         "model": config.model,
         "messages": _build_messages(prompt, source_tree),
         "temperature": 0.3,
-        "max_tokens": 512,
+        "max_tokens": 4096,
     }
 
     try:
