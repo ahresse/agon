@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import warnings
 from pathlib import Path
 
@@ -13,6 +14,8 @@ from agon.packages import ensure_packages
 from agon.presets import load_preset
 from agon.setup import execute_setup_steps, infer_steps
 from agon.summary import generate_summary
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def run_atomic_tests(
