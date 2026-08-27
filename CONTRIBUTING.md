@@ -3,14 +3,14 @@
 ## Commit conventions
 
 Agon's own git history is checked by repo-hygiene meta-tests
-(`backend/tests/meta/test_repo_commit_quality.py`). Please follow these rules so
+(`app/tests/meta/test_repo_commit_quality.py`). Please follow these rules so
 those tests stay green.
 
 ### Enforced (tests fail otherwise)
 
 - **Conventional subject**: `type(scope): summary`, where `type` is one of
   `feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert`.
-  The scope is optional, e.g. `feat(backend): add job queue`.
+  The scope is optional, e.g. `feat(app): add job queue`.
 - **Subject length** ≤ 80 characters.
 - **No empty subjects** and **no empty commits** (each commit must change files).
 - **Atomic history**: split work into multiple coherent commits rather than one
@@ -25,11 +25,11 @@ those tests stay green.
 ## Running the checks
 
 ```bash
-cd backend && pytest tests/meta        # repo-hygiene meta-tests
-cd backend && pytest                    # full backend suite
-cd frontend && npx vitest run           # frontend tests
+cd app && pytest tests/meta        # repo-hygiene + no-JavaScript guardrail
+cd app && pytest                    # full app suite (incl. web interface)
 ```
 
+The project is single-language (Python); there is no JavaScript to build or test.
 The meta-tests are skipped automatically when not run inside a git repository
 (e.g. shallow clones or tarball builds).
 

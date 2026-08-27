@@ -7,22 +7,19 @@ run/validation guide — implementation details live in `tasks.md` and the imple
 
 - Raspberry Pi (or arm64 host) running Ubuntu.
 - LXD installed and initialized (`lxd init`), with a usable Python base image/profile.
-- Python 3.11 and Node.js (for the frontend build) available.
-- Backend and frontend built per repository setup (see `backend/` and `frontend/`).
+- Python 3.11 available (single language — no JavaScript runtime/tooling required).
+- Backend built per repository setup (see `backend/`); the web interface is served by the same
+  Python service (feature 005).
 
 ## Setup
 
 ```bash
-# Backend (from repo root)
-cd backend
+# Single Python service (from repo root) — serves the API and the web interface.
+cd app
 # install deps, initialize SQLite schema, seed an ADMIN and a REVIEWER user,
 # and register built-in tests (at least one METRIC and one AI_AGENT).
-# Start the API:
 uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-
-# Frontend (separate shell)
-cd frontend
-npm install && npm run build   # or `npm run dev` for local development
+# Open http://127.0.0.1:8000/ in a browser.
 ```
 
 Reference: API surface in [contracts/openapi.yaml](./contracts/openapi.yaml); test plugin behavior

@@ -25,34 +25,54 @@ Agon follows its [constitution](./.specify/memory/constitution.md):
 
 ## Architecture
 
-- **Backend** (`backend/`): FastAPI + SQLAlchemy (SQLite), an in-process
+- **Service** (`app/`): FastAPI + SQLAlchemy (SQLite), an in-process
   SQLite-backed job queue, and an LXD-based container runner. Built-in Python
   quality plugins: `ruff` lint, `radon` complexity, standard-library idioms,
   `mypy` typing, `bandit` security, `black`+docstring formatting, and a
   **git commit-quality** assessment, plus a themed AI-agent test.
-- **Frontend** (`frontend/`): React + TypeScript (Vite) — upload, review breakdown,
-  weight editor, history, and admin configuration pages.
+- **Web interface** (`app/src/templates/`, `app/src/static/`): server-rendered
+  HTML (Jinja2) served by the same Python service — upload, review breakdown, weight
+  editor, history, and admin configuration pages. Interactivity (instant re-grade, log
+  expand) uses a single vendored, non-authored helper (htmx) served as a static asset;
+  the project authors **no JavaScript** (feature 005).
 
 ## Requirements
 
-- Python 3.11+ and Node.js.
+- Python 3.11+ (single language — no JavaScript runtime or package/build tooling required).
 - LXD installed and initialized (`lxd init`) for real sandboxed execution.
 
 ## Quick start (development)
 
-### 1. Provision the test container image (once)
+### One command (recommended)
 
 ```bash
-./backend/src/runners/provision_image.sh   # builds the `agon-python` LXD image
+./run.sh
+```
+
+This creates a virtualenv, installs the app, seeds the database on first run, and
+starts the server at `http://127.0.0.1:8000/`. Override the bind address or the
+runner with environment variables:
+
+```bash
+HOST=0.0.0.0 PORT=9000 ./run.sh          # bind on the LAN / custom port
+AGON_USE_LOCAL_RUNNER=1 ./run.sh          # dev fallback without LXD (non-isolating)
+```
+
+Default accounts: `admin` / `admin`, `reviewer` / `reviewer`.
+
+### Provision the test container image (once, for real sandboxed execution)
+
+```bash
+./app/src/runners/provision_image.sh   # builds the `agon-python` LXD image
 ```
 
 If LXD is unavailable (dev/CI only), set `AGON_USE_LOCAL_RUNNER=1` to use the
 non-isolating local runner — never use this in production.
 
-### 2. Backend
+### Manual setup (equivalent to `run.sh`)
 
 ```bash
-cd backend
+cd app
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 python -m src.seed          # seeds admin/reviewer users + built-in tests
@@ -61,15 +81,8 @@ uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 
 Default accounts: `admin` / `admin`, `reviewer` / `reviewer`.
 
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev                 # or: npm run build && npm run preview
-```
-
-Open the printed local URL and sign in. Upload a `.zip` or `.tar.gz` of Python
+Open `http://127.0.0.1:8000/` and sign in. The web interface is served by the same
+Python service (no separate frontend build). Upload a `.zip` or `.tar.gz` of Python
 source, then view the weighted grade, per-test breakdown, and pros/cons.
 
 ## Configuration (environment variables)
@@ -88,9 +101,8 @@ source, then view the weighted grade, per-test breakdown, and pros/cons.
 ## Tests
 
 ```bash
-cd backend  && pytest            # backend (unit, contract, integration)
-cd backend  && pytest tests/meta # repo-hygiene checks on Agon's own commits
-cd frontend && npx vitest run    # frontend components
+cd app      && pytest            # full app (unit, contract, integration, web)
+cd app      && pytest tests/meta # repo-hygiene + no-JavaScript guardrail
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit conventions (enforced by the
