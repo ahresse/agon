@@ -23,16 +23,16 @@ Installed via `pip` into the container's Python environment:
 | black | 24.8.0 | `formatting_black` |
 
 `stdlib_idioms` uses only the standard library `ast` module (no external tool).
+`git_history` (feature 003) requires the `git` binary, installed via `apt`.
 
 ## Provisioning
 
 ```bash
 lxc launch ubuntu:24.04 agon-python
 lxc exec agon-python -- apt-get update
-lxc exec agon-python -- apt-get install -y python3.11 python3-pip
+lxc exec agon-python -- apt-get install -y python3.11 python3-pip git
 lxc exec agon-python -- python3.11 -m pip install \
     ruff==0.6.9 radon==6.0.1 mypy==1.11.2 bandit==1.7.10 black==24.8.0
-# Snapshot into the profile referenced by AGON_LXD_PROFILE (default: agon-python)
 ```
 
 Or, equivalently, run the provided script which performs the steps above and

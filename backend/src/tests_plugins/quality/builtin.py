@@ -8,6 +8,7 @@ from __future__ import annotations
 from src.tests_plugins.quality import (
     complexity_radon,
     formatting_black,
+    git_history,
     lint_ruff,
     security_bandit,
     stdlib_idioms,
@@ -23,6 +24,7 @@ QUALITY_PLUGINS = [
     (type_check_mypy.KEY, "Type checking (mypy)", type_check_mypy.factory),
     (security_bandit.KEY, "Security (bandit)", security_bandit.factory),
     (formatting_black.KEY, "Formatting & docs (black)", formatting_black.factory),
+    (git_history.KEY, "Git commit quality", git_history.factory),
 ]
 
 

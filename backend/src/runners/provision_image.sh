@@ -38,10 +38,12 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 # Use the distro's default python3 (>=3.11 on supported Ubuntu releases:
 # 3.11 on 22.04/jammy, 3.12 on 24.04/noble). Both satisfy requires-python>=3.11.
-apt-get install -y python3 python3-pip
+# git is required by the git-quality assessment plugin (feature 003).
+apt-get install -y python3 python3-pip git
 python3 -m pip install --break-system-packages \
     ruff==0.6.9 radon==6.0.1 mypy==1.11.2 bandit==1.7.10 black==24.8.0
 python3 --version
+git --version
 IN
 
 echo "==> Stopping and publishing image as alias '${ALIAS}'"
