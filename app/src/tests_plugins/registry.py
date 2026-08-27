@@ -16,11 +16,27 @@ class PluginInput:
     timeout_seconds: int = 60
 
 
+# Evidence log cap (feature 004): 256 KiB per test result; longer is truncated.
+MAX_LOG_BYTES = 256 * 1024
+
+
+def truncate_log(text: str) -> str:
+    """Cap an evidence log at MAX_LOG_BYTES, appending a marker if truncated."""
+    if text is None:
+        return ""
+    encoded = text.encode("utf-8", errors="replace")
+    if len(encoded) <= MAX_LOG_BYTES:
+        return text
+    clipped = encoded[:MAX_LOG_BYTES].decode("utf-8", errors="ignore")
+    return clipped + "\n… [log truncated]"
+
+
 @dataclass(frozen=True)
 class PluginOutput:
     grade: float  # 0-100 (Principle I, FR-005)
     pros: list[str] = field(default_factory=list)
     cons: list[str] = field(default_factory=list)
+    log: str = ""  # evidence behind the grade (feature 004); optional, plain text
 
     def __post_init__(self) -> None:
         if not (0 <= self.grade <= 100):

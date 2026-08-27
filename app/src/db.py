@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -26,6 +26,21 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 def init_db() -> None:
     """Create all tables (bootstrap; migrations framework can replace this later)."""
     Base.metadata.create_all(bind=engine)
+    _run_additive_migrations()
+
+
+def _run_additive_migrations() -> None:
+    """Idempotent additive migrations for existing databases.
+
+    Adds columns introduced after initial release when they are missing, so an
+    existing SQLite database keeps working without a migration framework.
+    """
+    inspector = inspect(engine)
+    if "test_results" in inspector.get_table_names():
+        columns = {c["name"] for c in inspector.get_columns("test_results")}
+        if "log" not in columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE test_results ADD COLUMN log TEXT"))
 
 
 def get_session() -> Iterator[Session]:

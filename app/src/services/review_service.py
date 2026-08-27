@@ -54,9 +54,13 @@ def run_review(
                 status=executed.status,
                 pros=executed.pros,
                 cons=executed.cons,
+                log=executed.log,
                 ran_at=datetime.now(timezone.utc),
             )
         )
+        # Commit each result as it completes so live progress advances per-test
+        # (feature 006) instead of jumping from 0% to 100% at the end.
+        db.commit()
         result_inputs.append(
             ResultInput(test_id=test.id, grade=executed.grade, weight=test.default_weight)
         )

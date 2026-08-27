@@ -39,7 +39,7 @@ Or, equivalently, run the provided script which performs the steps above and
 publishes the image under the `AGON_LXD_PROFILE` alias (default `agon-python`):
 
 ```bash
-./backend/src/runners/provision_image.sh
+./app/src/runners/provision_image.sh
 ```
 
 The runner performs an availability preflight and, if the image is missing or

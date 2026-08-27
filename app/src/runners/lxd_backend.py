@@ -25,7 +25,7 @@ import uuid
 from src.tests_plugins.registry import PluginInput, PluginOutput, TestPlugin
 
 # Where the backend source and submission are placed inside the container.
-_CONTAINER_APP_DIR = "/opt/agon/backend"
+_CONTAINER_APP_DIR = "/opt/agon/app"
 _CONTAINER_SUB_DIR = "/opt/agon/submission"
 
 
@@ -44,7 +44,7 @@ def _lxc(args: list[str], timeout: int, check: bool = True) -> subprocess.Comple
     except FileNotFoundError as exc:
         raise LXDExecutionError(
             "The 'lxc' command was not found. Install and initialize LXD on the host "
-            "(see backend/src/runners/metric_image.md), or set AGON_USE_LOCAL_RUNNER=1 "
+            "(see app/src/runners/metric_image.md), or set AGON_USE_LOCAL_RUNNER=1 "
             "for a non-isolating dev fallback."
         ) from exc
     if check and proc.returncode != 0:
@@ -54,8 +54,8 @@ def _lxc(args: list[str], timeout: int, check: bool = True) -> subprocess.Comple
             raise LXDExecutionError(
                 f"LXD image/profile not available for '{args[1] if len(args) > 1 else '?'}'. "
                 "Provision the metric container image first: "
-                "run backend/src/runners/provision_image.sh "
-                "(see backend/src/runners/metric_image.md). Original error: " + stderr
+                "run app/src/runners/provision_image.sh "
+                "(see app/src/runners/metric_image.md). Original error: " + stderr
             )
         raise LXDExecutionError(
             f"lxc {' '.join(args)} failed ({proc.returncode}): {stderr}"
@@ -64,7 +64,7 @@ def _lxc(args: list[str], timeout: int, check: bool = True) -> subprocess.Comple
 
 
 def _backend_src_root() -> str:
-    # .../backend/src/runners/lxd_backend.py -> .../backend
+    # .../app/src/runners/lxd_backend.py -> .../app
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -145,6 +145,7 @@ def execute_in_lxd(
             grade=float(data["grade"]),
             pros=list(data.get("pros", [])),
             cons=list(data.get("cons", [])),
+            log=str(data.get("log", "") or ""),
         )
     finally:
         # 5. Destroy the container (defensive; ephemeral auto-deletes on stop).

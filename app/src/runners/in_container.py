@@ -44,7 +44,7 @@ def main(argv: list[str]) -> int:
         return 3
 
     output = plugin.run(PluginInput(submission_path=submission_path, config=config))
-    print(json.dumps({"grade": output.grade, "pros": output.pros, "cons": output.cons}))
+    print(json.dumps({"grade": output.grade, "pros": output.pros, "cons": output.cons, "log": getattr(output, "log", "")}))
     return 0
 
 
