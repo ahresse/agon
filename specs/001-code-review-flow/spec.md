@@ -143,6 +143,12 @@ and grading mechanics as metric-based tests, so it can follow the core flow.
 - An uploaded archive contains a member that would escape the extraction directory (a `../` path,
   an absolute path, or a symlink): the system rejects the whole archive with a clear message and
   does not extract or start an assessment, protecting the host.
+- An uploaded archive contains a hardlink, device, or FIFO member, or its declared format does not
+  match its actual content (e.g. tar bytes named `.zip`): the system detects the real format from
+  content and rejects unsafe non-regular members with a clear message, without extracting them.
+- An uploaded archive is a decompression bomb (excessive member count or total uncompressed size):
+  the system refuses it before writing the excess to disk and informs the reviewer, protecting the
+  host from resource exhaustion.
 - All enabled tests carry a weight of 0: the system prevents computing an undefined grade and
   informs the reviewer that at least one positive weight is required.
 - A reviewer changes weights while an assessment is still running: the grade recomputes only from
@@ -185,8 +191,10 @@ and grading mechanics as metric-based tests, so it can follow the core flow.
 - **FR-014**: System MUST restrict test and weight configuration and user management to admins, and
   restrict administrative actions from reviewers.
 - **FR-015**: System MUST authenticate users and distinguish the Reviewer and Admin roles.
-- **FR-016**: System MUST reject empty, corrupted, or source-less submissions with a clear message
-  and without starting an assessment.
+- **FR-016**: System MUST reject empty, corrupted, or source-less submissions, and MUST refuse
+  unsafe archives — those with path-traversal, absolute-path, symlink, hardlink, or device members,
+  or that exceed member-count / total-uncompressed-size limits (decompression bombs) — with a clear
+  message and without starting an assessment or writing unsafe content to the host.
 - **FR-017**: System MUST prevent finalizing a grade when no enabled test carries a positive weight
   and inform the reviewer of the requirement.
 

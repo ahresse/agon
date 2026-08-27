@@ -243,6 +243,17 @@ run inside disposable LXD containers on the host (never on the host process).
 
 ---
 
+## Phase 11: Expanded Archive Assessment Tests (FR-001, FR-016)
+
+**Purpose**: Broaden and organize archive-extraction test coverage into clear topic subsections
+(format detection, path safety, link safety, resource limits, corrupted inputs, result shape).
+
+- [X] T088 [P] [US1] Refactor + expand extraction unit tests into topic classes (formats incl. tar.bz2/xz, deceptive filename, hardlink/device/zip-symlink, size-bomb + boundary, corrupted inputs, result shape) in backend/tests/unit/test_archive_extraction.py
+- [X] T089 [P] [US1] Reorganize submission contract tests into topic classes and add .tar accept, path-traversal 422, and symlink-member 422 in backend/tests/contract/test_submissions.py
+- [X] T090 [P] [US1] Amend FR-001/FR-016 edge cases (hardlink/device members, decompression bombs, deceptive format) in specs/001-code-review-flow/spec.md
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
