@@ -1,0 +1,290 @@
+openapi: 3.1.0
+info:
+  title: Agon Code Review API
+  version: 0.1.0
+  description: >
+    HTTP contract between the Agon web frontend and backend for the end-to-end candidate code
+    review flow. Covers authentication, submission upload, asynchronous assessment, weighted
+    grading with per-review overrides, and browsing history. Derived from spec.md (FR-001..FR-017).
+servers:
+  - url: http://localhost:8000
+    description: Single self-hosted instance (Raspberry Pi / Ubuntu)
+
+tags:
+  - name: auth
+  - name: submissions
+  - name: reviews
+  - name: tests
+  - name: admin
+
+paths:
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Sign in and establish a session (FR-015)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        "200":
+          description: Authenticated; session established
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /submissions:
+    post:
+      tags: [submissions]
+      summary: Upload candidate code and start an assessment (FR-001, FR-002, FR-003, FR-016)
+      description: >
+        Accepts a code archive as either a zip (.zip) or gzip-compressed tar (.tar.gz/.tgz/.tar).
+        The system safely extracts it (rejecting path-traversal, absolute-path, and symlink members),
+        auto-detects language, and rejects non-Python, empty, corrupted, unsafe, or source-less
+        uploads with 422. On success it creates a Submission and a Review, then schedules test runs
+        asynchronously.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [candidate_label, archive]
+              properties:
+                candidate_label: { type: string }
+                archive:
+                  type: string
+                  format: binary
+                  description: Zip or gzip-tar archive (.zip, .tar.gz, .tgz, .tar) of Python source.
+      responses:
+        "202":
+          description: Accepted; assessment scheduled
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Review" }
+        "422":
+          description: Rejected (unsupported language / unusable archive)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /reviews:
+    get:
+      tags: [reviews]
+      summary: List past reviews for the current reviewer (FR-011, User Story 4)
+      responses:
+        "200":
+          description: Review history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ReviewSummary" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /reviews/{reviewId}:
+    get:
+      tags: [reviews]
+      summary: Get a review with full breakdown (FR-012)
+      parameters:
+        - $ref: "#/components/parameters/ReviewId"
+      responses:
+        "200":
+          description: Review detail with per-test breakdown and aggregated pros/cons
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /reviews/{reviewId}/weights:
+    put:
+      tags: [reviews]
+      summary: Override weights for this review and recompute instantly (FR-009, FR-010, FR-017)
+      description: >
+        Applies per-review weight overrides and returns the recomputed final grade from stored
+        results without re-running any test. Rejects with 422 if no enabled test would carry a
+        positive effective weight.
+      parameters:
+        - $ref: "#/components/parameters/ReviewId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [weights]
+              properties:
+                weights:
+                  type: array
+                  items:
+                    type: object
+                    required: [test_id, weight]
+                    properties:
+                      test_id: { type: string }
+                      weight: { type: number, minimum: 0 }
+      responses:
+        "200":
+          description: Weights applied; grade recomputed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewDetail" }
+        "422":
+          description: All effective weights zero (FR-017)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /tests:
+    get:
+      tags: [tests]
+      summary: List configured tests and default weights
+      responses:
+        "200":
+          description: Tests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Test" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /admin/tests/{testId}:
+    put:
+      tags: [admin]
+      summary: Enable/disable a test and set its default weight (FR-008, FR-014 admin-only)
+      parameters:
+        - name: testId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled: { type: boolean }
+                default_weight: { type: number, minimum: 0 }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Test" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  parameters:
+    ReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: Authenticated but not permitted (admin-only action)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        username: { type: string }
+        role: { type: string, enum: [REVIEWER, ADMIN] }
+
+    Test:
+      type: object
+      properties:
+        id: { type: string }
+        key: { type: string }
+        name: { type: string }
+        type: { type: string, enum: [METRIC, AI_AGENT] }
+        theme: { type: string }
+        enabled: { type: boolean }
+        default_weight: { type: number, minimum: 0 }
+
+    Review:
+      type: object
+      properties:
+        id: { type: string }
+        submission_id: { type: string }
+        reviewer_id: { type: string }
+        status: { type: string, enum: [PENDING, RUNNING, COMPLETED, FAILED] }
+        final_grade:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 100
+
+    ReviewSummary:
+      allOf:
+        - $ref: "#/components/schemas/Review"
+        - type: object
+          properties:
+            candidate_label: { type: string }
+            created_at: { type: string, format: date-time }
+
+    ReviewDetail:
+      allOf:
+        - $ref: "#/components/schemas/ReviewSummary"
+        - type: object
+          properties:
+            results:
+              type: array
+              items: { $ref: "#/components/schemas/TestResult" }
+            pros:
+              type: array
+              items: { type: string }
+            cons:
+              type: array
+              items: { type: string }
+
+    TestResult:
+      type: object
+      properties:
+        test_id: { type: string }
+        test_name: { type: string }
+        grade: { type: number, minimum: 0, maximum: 100 }
+        status: { type: string, enum: [SUCCESS, FAILED] }
+        effective_weight: { type: number, minimum: 0 }
+        contribution: { type: number }
+        pros:
+          type: array
+          items: { type: string }
+        cons:
+          type: array
+          items: { type: string }
