@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Review · Agon{% endblock %}
+{% block content %}
+<h1>Review detail</h1>
+{% if progress.is_terminal %}
+{% include "fragments/grade.html" %}
+{% else %}
+{% include "fragments/progress.html" %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{# Evidence-log fragment: present / empty / no-log-available (spec 004 states). #}
+{% if log is none %}
+<p class="muted">No log available for this result.</p>
+{% elif log == "" %}
+<p class="muted">No additional evidence.</p>
+{% else %}
+<pre class="log">{{ log }}</pre>
+{% endif %}

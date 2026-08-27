@@ -21,6 +21,8 @@ class Settings:
     run_jobs_inline: bool = os.environ.get("AGON_RUN_JOBS_INLINE", "0") == "1"
     # Number of background job-queue workers.
     job_workers: int = int(os.environ.get("AGON_JOB_WORKERS", "2"))
+    # Live-progress poll interval (seconds) for the review page (feature 006).
+    progress_poll_seconds: int = int(os.environ.get("AGON_PROGRESS_POLL_SECONDS", "2"))
 
 
 settings = Settings()

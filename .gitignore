@@ -7,12 +7,10 @@ dist/
 *.egg-info/
 *.db
 uploads/
-
-# Node / frontend
-node_modules/
-frontend/dist/
-frontend/build/
 *.log
+
+# Tooling caches (e.g. .opencode/) — the project itself authors no JavaScript
+node_modules/
 
 # Env / secrets
 .env*

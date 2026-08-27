@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.api import (
     auth,
@@ -13,7 +15,10 @@ from src.api import (
     submissions,
     tests as tests_router,
     users,
+    web,
 )
+from src.api.web_auth import _RedirectException
+from src.api.web_render import static_dir
 from src.config import settings
 from src.db import init_db
 from src.services.job_queue import queue
@@ -39,6 +44,7 @@ def register_plugins() -> None:
 def create_app() -> FastAPI:
     app = FastAPI(title="Agon Code Review API", version="0.1.0")
     register_plugins()
+    # JSON API routers.
     app.include_router(auth.router)
     app.include_router(submissions.router)
     app.include_router(reviews_list.router)
@@ -46,6 +52,13 @@ def create_app() -> FastAPI:
     app.include_router(reviews_weights.router)
     app.include_router(tests_router.router)
     app.include_router(users.router)
+    # Server-rendered web interface (feature 005) + static assets.
+    app.mount("/static", StaticFiles(directory=static_dir()), name="static")
+    app.include_router(web.router)
+
+    @app.exception_handler(_RedirectException)
+    async def _handle_redirect(request: Request, exc: _RedirectException) -> RedirectResponse:
+        return exc.response
 
     @app.on_event("startup")
     def _startup() -> None:

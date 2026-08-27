@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Agon{% endblock %}
+{% block content %}
+<h1>Agon — Sign in</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<form method="post" action="/login">
+  <p><label>Username <input name="username" value="reviewer" autocomplete="username" /></label></p>
+  <p><label>Password <input type="password" name="password" autocomplete="current-password" /></label></p>
+  <p><button type="submit">Sign in</button></p>
+</form>
+{% endblock %}

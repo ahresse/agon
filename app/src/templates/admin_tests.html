@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Test config · Agon{% endblock %}
+{% block content %}
+<h1>Test configuration</h1>
+<table>
+  <thead><tr><th>Test</th><th>Type</th><th>Enabled</th><th>Default weight</th><th></th></tr></thead>
+  <tbody>
+    {% for t in tests %}
+    <tr>
+      <td>{{ t.name }}</td>
+      <td>{{ t.type.value }}</td>
+      <form method="post" action="/ui/admin/tests/{{ t.id }}">
+        <td><input type="checkbox" name="enabled" {% if t.enabled %}checked{% endif %}
+                   aria-label="enabled-{{ t.name }}" /></td>
+        <td><input type="number" name="default_weight" min="0" step="0.5"
+                   value="{{ t.default_weight }}" aria-label="weight-{{ t.name }}" /></td>
+        <td><button type="submit">Save</button></td>
+      </form>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

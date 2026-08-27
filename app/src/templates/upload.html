@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Upload · Agon{% endblock %}
+{% block content %}
+<h1>Upload a submission</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<form method="post" action="/ui/upload" enctype="multipart/form-data">
+  <p><label>Candidate label <input name="candidate_label" required /></label></p>
+  <p>
+    <label>Submission archive (.zip or .tar.gz of Python code)
+      <input type="file" name="archive" accept=".zip,.tar.gz,.tgz,.tar,application/zip,application/gzip" required />
+    </label>
+  </p>
+  <p><button type="submit">Upload &amp; assess</button></p>
+</form>
+{% endblock %}

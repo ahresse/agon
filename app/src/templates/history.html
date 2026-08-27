@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}History · Agon{% endblock %}
+{% block content %}
+<h1>Review history</h1>
+{% if not reviews %}
+<p class="muted">No reviews yet.</p>
+{% else %}
+<table>
+  <thead>
+    <tr><th>Candidate</th><th>Date</th><th>Status</th><th>Final grade</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for r in reviews %}
+    <tr>
+      <td>{{ r.candidate_label }}</td>
+      <td>{{ r.created_at }}</td>
+      <td>{{ r.status }}</td>
+      <td>{{ r.final_grade if r.final_grade is not none else "—" }}</td>
+      <td><a href="/ui/reviews/{{ r.id }}">Open</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

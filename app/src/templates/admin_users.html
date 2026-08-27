@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Users · Agon{% endblock %}
+{% block content %}
+<h1>User management</h1>
+<form method="post" action="/ui/admin/users">
+  <input name="username" placeholder="username" aria-label="new-username" required />
+  <input type="password" name="password" placeholder="password" aria-label="new-password" required />
+  <select name="role" aria-label="new-role">
+    <option value="REVIEWER">REVIEWER</option>
+    <option value="ADMIN">ADMIN</option>
+  </select>
+  <button type="submit">Create user</button>
+</form>
+<table>
+  <thead><tr><th>Username</th><th>Role</th></tr></thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.username }}</td>
+      <td>
+        <form method="post" action="/ui/admin/users/{{ u.id }}">
+          <select name="role" aria-label="role-{{ u.username }}"
+                  hx-post="/ui/admin/users/{{ u.id }}" hx-trigger="change"
+                  hx-swap="none">
+            <option value="REVIEWER" {% if u.role.value == "REVIEWER" %}selected{% endif %}>REVIEWER</option>
+            <option value="ADMIN" {% if u.role.value == "ADMIN" %}selected{% endif %}>ADMIN</option>
+          </select>
+          <button type="submit">Save</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

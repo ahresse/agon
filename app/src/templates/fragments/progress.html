@@ -1,0 +1,31 @@
+{#- Live review progress fragment (feature 006).
+   While running: status + progress bar + ETA, self-polling every {{ poll_seconds }}s.
+   When terminal: no poll trigger (polling stops); shows the final grade + breakdown. -#}
+{%- set rid = review_id or (review.id if review is defined else "") -%}
+{% if progress.is_terminal %}
+<div id="review-progress">
+  <p class="muted">Assessment {{ progress.status.value|lower }}.</p>
+  {% include "fragments/grade.html" %}
+</div>
+{% else %}
+<div id="review-progress"
+     hx-get="/ui/reviews/{{ rid }}/progress"
+     hx-trigger="every {{ poll_seconds }}s"
+     hx-swap="outerHTML">
+  <p>Status: <strong>{{ progress.status.value|lower }}</strong></p>
+  <div style="background:#e9edf5;border-radius:6px;overflow:hidden;height:1.25rem;max-width:32rem;">
+    <div style="background:#2b6cb0;height:100%;width:{{ progress.percent }}%;transition:width .3s;"></div>
+  </div>
+  <p class="muted">
+    {{ progress.completed }} / {{ progress.total }} tests complete
+    ·
+    {% if progress.eta_seconds is none %}
+      estimating…
+    {% elif progress.eta_seconds == 0 %}
+      finishing…
+    {% else %}
+      ~{{ progress.eta_seconds }}s remaining
+    {% endif %}
+  </p>
+</div>
+{% endif %}

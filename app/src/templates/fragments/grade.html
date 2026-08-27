@@ -1,0 +1,47 @@
+{# Grade + per-test breakdown fragment (swapped in place on weight change). #}
+<div id="grade-breakdown">
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <p class="grade">Final grade:
+    {{ review.final_grade if review.final_grade is not none else "—" }}</p>
+  <p class="muted">Candidate: {{ review.candidate_label }} · Status: {{ review.status.value }}</p>
+
+  <form hx-post="/ui/reviews/{{ review.id }}/weights"
+        hx-target="#grade-breakdown" hx-swap="outerHTML">
+    <table>
+      <thead>
+        <tr>
+          <th>Test</th><th>Grade</th><th>Weight</th><th>Contribution</th><th>Findings</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in review.results %}
+        <tr>
+          <td>{{ res.test_name }}</td>
+          <td>{{ res.grade }}</td>
+          <td>
+            <input type="number" name="weight_{{ res.test_id }}" min="0" step="0.5"
+                   value="{{ res.effective_weight }}"
+                   aria-label="weight-{{ res.test_name }}" />
+          </td>
+          <td>{{ res.contribution }}</td>
+          <td>
+            <ul class="pros">{% for p in res.pros %}<li>{{ p }}</li>{% endfor %}</ul>
+            <ul class="cons">{% for c in res.cons %}<li>{{ c }}</li>{% endfor %}</ul>
+            <button type="button"
+                    hx-get="/ui/reviews/{{ review.id }}/tests/{{ res.test_id }}/log"
+                    hx-target="#log-{{ res.test_id }}" hx-swap="innerHTML">
+              Show evidence log
+            </button>
+            <div id="log-{{ res.test_id }}"></div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><button type="submit">Apply &amp; re-grade</button></p>
+  </form>
+
+  <h3>Aggregated findings</h3>
+  <ul class="pros">{% for p in review.pros %}<li>{{ p }}</li>{% endfor %}</ul>
+  <ul class="cons">{% for c in review.cons %}<li>{{ c }}</li>{% endfor %}</ul>
+</div>
