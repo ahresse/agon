@@ -28,8 +28,8 @@ Agon follows its [constitution](./.specify/memory/constitution.md):
 - **Backend** (`backend/`): FastAPI + SQLAlchemy (SQLite), an in-process
   SQLite-backed job queue, and an LXD-based container runner. Built-in Python
   quality plugins: `ruff` lint, `radon` complexity, standard-library idioms,
-  `mypy` typing, `bandit` security, and `black`+docstring formatting, plus a
-  themed AI-agent test.
+  `mypy` typing, `bandit` security, `black`+docstring formatting, and a
+  **git commit-quality** assessment, plus a themed AI-agent test.
 - **Frontend** (`frontend/`): React + TypeScript (Vite) — upload, review breakdown,
   weight editor, history, and admin configuration pages.
 
@@ -89,12 +89,19 @@ source, then view the weighted grade, per-test breakdown, and pros/cons.
 
 ```bash
 cd backend  && pytest            # backend (unit, contract, integration)
+cd backend  && pytest tests/meta # repo-hygiene checks on Agon's own commits
 cd frontend && npx vitest run    # frontend components
 ```
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit conventions (enforced by the
+repo-hygiene meta-tests).
+
 ## Status
 
-- `001-code-review-flow` — implemented (upload → weighted grade, weight overrides,
-  admin config, history, AI-agent test, containerized execution).
+- `001-code-review-flow` — implemented (upload `.zip`/`.tar.gz` → weighted grade,
+  weight overrides, admin config, history, AI-agent test, containerized execution).
 - `002-one-command-deploy` — specified; single-command, host-safe deployment with
   local web access is planned but not yet implemented.
+- `003-git-quality-assessment` — implemented (a metric test grading a candidate's
+  commit message quality, granularity, and signing when the submission includes a
+  git history).
